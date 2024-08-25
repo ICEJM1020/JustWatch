@@ -89,4 +89,24 @@ def fetch_trajectory(dir_path:str):
     return res
 
 
+def fetch_player_box(dir_path:str, ):
+    res = {}
+
+    _videos = [i.split(".")[0] for i in os.listdir(dir_path)]
+    for _v in _videos:
+        try:
+            data = pd.read_csv(os.path.join(dir_path, f"{_v}.csv"), header=None)
+            data.columns = ["frame", "player", "LeftUp.x", "LeftUp.y", "RightBottom.x", "RightBottom.y"]
+        except:
+            continue
+        else:
+            temp_res = {}
+            data[["LeftUp.x", "RightBottom.x"]] = (data[["LeftUp.x", "RightBottom.x"]] / VIDEO_SIZE[0]) * SCREEN_SIZE[0] - (SCREEN_SIZE[0] // 2)
+            data[["LeftUp.y", "RightBottom.y"]] = ((1080 - data[["LeftUp.y", "RightBottom.y"]]) / VIDEO_SIZE[1]) * SCREEN_SIZE[1] - (SCREEN_SIZE[1] // 2)
+            data["frame"] = data["frame"]+1
+            for _p, _p_df in data.groupby(by="player"):
+                temp_res[f"Player-{_p}"] = _p_df.reset_index(drop=True).drop("player", axis=1).to_dict()
+            res[_v] = temp_res
+
+    return res
 

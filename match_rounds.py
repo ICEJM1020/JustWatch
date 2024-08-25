@@ -120,7 +120,7 @@ def find_match_round_dtw(eye_data_df:pd.DataFrame, ball_data_df:pd.DataFrame, or
                     match_indice = _indices
               
         dtw_res[_round] = min_dtw
-        res[_round] = match_indice
+        res[_round] = match_indice.to_list()
 
     return res, dtw_res
 
@@ -181,7 +181,7 @@ def find_match_round_dtw_kmp(eye_data_df:pd.DataFrame, ball_data_df:pd.DataFrame
                 _last_idx = _last_idx + MIN_DTW_WINDOW
 
         dtw_res[_round] = min_dtw
-        res[_round] = match_indice
+        res[_round] = match_indice.to_list()
 
     return res, dtw_res
 

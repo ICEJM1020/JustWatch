@@ -194,4 +194,3 @@ def extract_trajectory(eye_data_df:pd.DataFrame, ball_data_df:pd.DataFrame, vide
         res["AllTrajectoryAccelerateDTWPerSec"] = _all_accelerate_dtw * VR_SCALE / (eye_data_df.shape[0] * EYE_SAMPLE_TIME / 1000)
     
     return res
-
