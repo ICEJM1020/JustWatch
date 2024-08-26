@@ -142,3 +142,46 @@ def compute_gradient_dtw(line_1:pd.DataFrame, line_2:pd.DataFrame, order:int=1, 
     return compute_dtw(line_1[line_1_grad_col], line_2[line_2_grad_col], scale_to_percentage=scale_to_percentage)
 
 
+def single_video_res(people_fea_res, video_id):
+    res = {}
+    for _p, person_fea in people_fea_res.items():
+        try:
+            for _r, _fea in person_fea[video_id].items():
+                res[f"{_p}-{_r}"] = _fea
+        except:
+            continue
+    return res
+
+
+def single_person_res(people_fea_res, people_id):
+    res = {}
+    for _v, video_fea in people_fea_res[people_id].items():
+        try:
+            for _r, _fea in video_fea.items():
+                res[f"{_v}-{_r}"] = _fea
+        except:
+            continue
+    return res
+
+
+def single_person_rounds(people_rounds_res, people_id):
+    res = {}
+    for _v, video_rounds in people_rounds_res[people_id].items():
+        try:
+            for _r, _fea in video_rounds.items():
+                res[f"{_v}-{_r}"] = _fea
+        except:
+            continue
+    return res
+
+
+def single_person_match_rounds(people_match_rounds_res, people_id):
+    res = {}
+    for _v, video_rounds in people_match_rounds_res[people_id].items():
+        try:
+            for _r, _fea in video_rounds.items():
+                res[f"{_v}-{_r}"] = _fea
+        except:
+            continue
+    return res
+

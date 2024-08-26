@@ -10,7 +10,7 @@ from sklearn.preprocessing import minmax_scale
 
 
 from config import *
-from utils import interplate_and_align, interplate_enlarge, compute_dtw, compute_gradient_dtw
+from Extractor.utils import interplate_and_align, interplate_enlarge, compute_dtw, compute_gradient_dtw
 
 
 def count_points_in_radius(ball_df:pd.DataFrame, eye_df:pd.DataFrame, radius):
