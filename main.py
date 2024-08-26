@@ -38,7 +38,8 @@ def extract_person(_person_dict:dict):
         res = extract_features(
             data=_person_data[_video], 
             ball_data=_ball_data[_video.split("_")[0]],
-            player_box_data=_player_box_data[_video.split("_")[0]]
+            player_box_data=_player_box_data[_video.split("_")[0]],
+            dtw_mode="greedy",
         )
         
         _person_fea[_video] = {}
