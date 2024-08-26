@@ -39,7 +39,7 @@ def extract_person(_person_dict:dict):
             data=_person_data[_video], 
             ball_data=_ball_data[_video.split("_")[0]],
             player_box_data=_player_box_data[_video.split("_")[0]],
-            dtw_mode="greedy",
+            dtw_mode="fast",
         )
         
         _person_fea[_video] = {}
@@ -52,12 +52,19 @@ def extract_person(_person_dict:dict):
             _person_fea[_video].update(res["saccade_fea"])
             _person_match_rounds[_video] = res["match_rounds"]
 
+    fea_res = {}
+    for _v, video_fea in _person_fea.items():
+        try:
+            for _r, _fea in video_fea.items():
+                fea_res[f"{_v}-{_r}"] = _fea
+        except:
+            continue
     
     out_dir = f"output/{_person}"
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
 
-    pd.DataFrame(_person_fea).T.to_csv(f"{out_dir}/features.csv")
+    pd.DataFrame(fea_res).T.to_csv(f"{out_dir}/features.csv")
     with open(f"{out_dir}/rounds.json", "w") as f:
         json.dump(_person_rounds, f)
     with open(f"{out_dir}/match_rounds.json", "w") as f:
@@ -88,12 +95,10 @@ if __name__ == "__main__":
     all_people_rounds = {}
     all_people_match_rounds = {}
 
-    # Using a pool of processes
-    with mp.Pool(processes=mp.cpu_count()) as pool:
-        results = pool.map(extract_person, data.items())
-
-
     if not os.path.exists("output"):
         os.mkdir("output")
 
+    # Using a pool of processes
+    with mp.Pool(processes=mp.cpu_count()) as pool:
+        results = pool.map(extract_person, data.items())
 
