@@ -84,3 +84,18 @@ def extract_trajectory(eye_data_df:pd.DataFrame, ball_data_df:pd.DataFrame, vide
     return res
 
 
+def extract_trajectory_lite(round_index, data:pd.DataFrame, ball_data_df):
+    _fea = {}
+    
+    _ball_df = ball_data_df[ball_data_df["round"]==round_index]
+    _dtw = compute_dtw(
+            line_1=data.loc[:, ["Screen.x", "Screen.y"]],
+            line_2=_ball_df.loc[:, ["Ball.x", "Ball.y"]],
+            # scale_to_percentage=True,
+            # scale_metrics="start"
+        )
+    
+    _fea["TrajectoryDTW"] = _dtw
+
+    return _fea
+

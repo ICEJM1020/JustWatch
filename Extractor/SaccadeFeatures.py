@@ -122,3 +122,39 @@ def extract_saccade_features(data, video_id):
 
     return _fea
 
+
+def compute_saccade_path_lite(df:pd.DataFrame):
+    _speeds = [0]
+    _angles = [0]
+    indices = list(df.index)
+    _dura = (1 * EYE_SAMPLE_TIME ) / 1000.0
+    df["Screen.x"] = df["Screen.x"] * VR_SCALE
+    df["Screen.y"] = df["Screen.y"] * VR_SCALE
+
+    for _i in range(1, len(indices)):
+        row_1 = df.loc[indices[_i - 1], :]
+        row_2 = df.loc[indices[_i], :]
+
+        _dist = np.sqrt((row_1["Screen.x"] - row_2["Screen.x"])**2 + (row_1["Screen.y"] - row_2["Screen.y"])**2)
+        _angle = np.arctan(_dist / VR_ZDIST) / np.pi * 180
+
+        _angles.append(_angle)
+        _speeds.append(np.divide(_angle, _dura))
+
+    return _speeds, _angles
+
+
+def extract_saccade_features_lite(round_index, data:pd.DataFrame, ball_data_df:pd.DataFrame):
+    _fea = {}
+
+    _speeds, _angles = compute_saccade_path_lite(data)
+    _fea = {**_fea, **compute_stat("SaccadeSpeed", _speeds)}
+    _fea = {**_fea, **compute_stat("SaccadeAngel", _angles)}
+
+    round_start_index = ball_data_df[ball_data_df["round"]==round_index].index[0]
+    round_dura = ball_data_df[ball_data_df["round"]==round_index].shape[0]
+    eye_start_index = data.index[0]
+    _fea["SaccadeDelay"] = (eye_start_index-round_start_index) * EYE_SAMPLE_TIME
+    _fea["SaccadeDelayPercent"] = ((eye_start_index-round_start_index) / round_dura) * EYE_SAMPLE_TIME
+
+    return _fea

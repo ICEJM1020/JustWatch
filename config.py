@@ -1,7 +1,7 @@
 import numpy as np
 
-DATA_DIR = "/Users/timberzhang/Documents/Documents/2024-JustWatch/Data"
-# DATA_DIR = "E:\\JustWatchData\\Data"
+# DATA_DIR = "/Users/timberzhang/Documents/Documents/2024-JustWatch/Data"
+DATA_DIR = "E:\\JustWatchData\\Data"
 
 FILL_NAN = np.nan
 CLUSTER_MIN_EPS = 25

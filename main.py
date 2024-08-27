@@ -29,17 +29,19 @@ def extract_person(_person_dict:dict):
     _person_match_rounds = {}
     _person_rounds = {}
 
-    if not _person == "24071512_AD": 
-        return None
+    # if not _person == "24071512_AD": 
+    #     return None
 
     for _video in _person_data.keys():
-        if not _video == "p7": continue
+        # if not _video == "p7": continue
         
         res = extract_features(
             data=_person_data[_video], 
             ball_data=_ball_data[_video.split("_")[0]],
             player_box_data=_player_box_data[_video.split("_")[0]],
-            dtw_mode="fast",
+            dtw_mode="greedy",
+            dtw_th=99,
+            dist_th=58
         )
         
         _person_fea[_video] = {}
