@@ -29,8 +29,8 @@ def extract_person(_person_dict:dict):
     _person_match_rounds = {}
     _person_rounds = {}
 
-    # if not _person == "24071512_AD": 
-    #     return None
+    if not _person == "24071512_AD": 
+        return None
 
     for _video in _person_data.keys():
         if not _video == "p7": continue
@@ -77,9 +77,9 @@ if __name__ == "__main__":
 
     file_list = os.listdir(DATA_DIR)
     file_list = list(filter(lambda x: "AD" in x, file_list))
-    drop_list = ['pingpang.csv', 'tennis.csv', '.DS_Store', 'ControlGroupInfo.xlsx',]
+    # drop_list = ['pingpang.csv', 'tennis.csv', '.DS_Store', 'ControlGroupInfo.xlsx',]
 
-    all_data = fetch_data(DATA_DIR, file_list, drop_list)
+    all_data = fetch_data(DATA_DIR, file_list, drop_list=[])
     ball_data = fetch_trajectory(DATA_DIR)
     player_box_data = fetch_player_box(os.path.join(DATA_DIR, "PlayerDetectionRes"))
 
