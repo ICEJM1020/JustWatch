@@ -11,15 +11,15 @@ import json
 import warnings
 warnings.filterwarnings("ignore")
 from copy import deepcopy
+import time
 
 from config import *
 from load_data import fetch_data, fetch_trajectory, fetch_player_box
 from Extractor.Extractor import extract_features
 
 
-
-
 def extract_person(_person_dict:dict):
+    start_time = time.time()
     _person=_person_dict[0]
     _person_data=_person_dict[1]["data"]
     _ball_data=_person_dict[1]["ball_data"]
@@ -33,13 +33,13 @@ def extract_person(_person_dict:dict):
     #     return None
 
     for _video in _person_data.keys():
-        if not _video == "p7": continue
+        # if not _video == "p7": continue
         
         res = extract_features(
             data=_person_data[_video], 
             ball_data=_ball_data[_video.split("_")[0]],
             player_box_data=_player_box_data[_video.split("_")[0]],
-            dtw_mode="fast",
+            dtw_mode="greedy",
             dtw_th=99,
             dist_th=58
         )
@@ -72,6 +72,7 @@ def extract_person(_person_dict:dict):
     with open(f"{out_dir}/match_rounds.json", "w") as f:
         json.dump(_person_match_rounds, f)
 
+    print(_person, time.time()-start_time)
     return _person
 
 
