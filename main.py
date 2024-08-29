@@ -33,13 +33,13 @@ def extract_person(_person_dict:dict):
     #     return None
 
     for _video in _person_data.keys():
-        # if not _video == "p7": continue
+        if not _video == "p7": continue
         
         res = extract_features(
             data=_person_data[_video], 
             ball_data=_ball_data[_video.split("_")[0]],
             player_box_data=_player_box_data[_video.split("_")[0]],
-            dtw_mode="greedy",
+            dtw_mode="fast",
             dtw_th=99,
             dist_th=58
         )
@@ -65,7 +65,7 @@ def extract_person(_person_dict:dict):
     out_dir = f"output/{_person}"
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
-
+ 
     pd.DataFrame(fea_res).T.to_csv(f"{out_dir}/features.csv")
     with open(f"{out_dir}/rounds.json", "w") as f:
         json.dump(_person_rounds, f)
@@ -76,12 +76,16 @@ def extract_person(_person_dict:dict):
 
 
 if __name__ == "__main__":
+    if not os.path.exists("output"):
+        os.mkdir("output")
 
     file_list = os.listdir(DATA_DIR)
     file_list = list(filter(lambda x: "AD" in x, file_list))
     # drop_list = ['pingpang.csv', 'tennis.csv', '.DS_Store', 'ControlGroupInfo.xlsx',]
+    drop_list = [i+".csv" for i in os.listdir("output")]
 
-    all_data = fetch_data(DATA_DIR, file_list, drop_list=[])
+    all_data = fetch_data(DATA_DIR, file_list, drop_list=drop_list)
+    print("Extract Features from: {}".format(list(all_data.keys())))
     ball_data = fetch_trajectory(DATA_DIR)
     player_box_data = fetch_player_box(os.path.join(DATA_DIR, "PlayerDetectionRes"))
 
@@ -96,9 +100,6 @@ if __name__ == "__main__":
     all_people_fea = {}
     all_people_rounds = {}
     all_people_match_rounds = {}
-
-    if not os.path.exists("output"):
-        os.mkdir("output")
 
     # Using a pool of processes
     with mp.Pool(processes=mp.cpu_count()) as pool:
