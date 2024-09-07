@@ -50,7 +50,7 @@ def threshold_find_match_round_dtw(eye_data:pd.DataFrame, ball_data_df:pd.DataFr
     return res, rounds
 
 
-def extract_features(data, ball_data, player_box_data, dtw_mode="fast", dtw_th=1, dist_th=10):
+def extract_features(data, ball_data, player_box_data, dtw_mode="fast", scale_raw_data=True, dtw_th=1, dist_th=10):
     data_df = pd.DataFrame(data).T
     data_df.ffill(inplace=True)
     data_df.bfill(inplace=True)
@@ -59,7 +59,7 @@ def extract_features(data, ball_data, player_box_data, dtw_mode="fast", dtw_th=1
     
     # match_rounds = label_round_hit(data_df.loc[:, ["Screen.x", "Screen.y"]], video_id)
 
-    match_rounds, rounds = threshold_find_match_round_dtw(data_df.copy(), ball_data_df.copy(), order=0, scale_raw_data=True, mode=dtw_mode, dtw_th=dtw_th, dist_th=dist_th)
+    match_rounds, rounds = threshold_find_match_round_dtw(data_df.copy(), ball_data_df.copy(), order=0, scale_raw_data=scale_raw_data, mode=dtw_mode, dtw_th=dtw_th, dist_th=dist_th)
     # match_rounds = find_match_round_hit(data_df.loc[:, ["Screen.x", "Screen.y"]], video_id, time_range=7, dist=300)
     saccade_features = extract_features_round(match_rounds, data_df.copy(), ball_data_df.copy())
 
