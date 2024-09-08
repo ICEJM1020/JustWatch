@@ -44,11 +44,16 @@ def fetch_data(dir_path:str, file_list:list, drop_list:list=[]):
         for _, row in _single_person_data_df.iterrows():
             _eye_data = fetch_eye_data(row["EyeData"])
             v_id = row["videoName"]
-            if v_id in _single_person_data_dict.keys(): 
-                _videos[v_id] += 1
-                v_id = v_id + f"_{_videos[v_id]}"
+            v_sec = row["section"]
+            v_num = row["number"]
+            v_name = v_id.split("_")[0]
+
+            if v_name in _videos.keys():
+                _videos[v_name] += 1
             else:
-                _videos[v_id] = 1
+                _videos[v_name] = 1
+
+            v_id = v_id + f"_{v_sec}_{v_num}_{_videos[v_name]}"
             _single_person_data_dict[v_id] = _eye_data
         
         _all_data[file.split(".")[0]] = _single_person_data_dict

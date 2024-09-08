@@ -40,7 +40,7 @@ def extract_person(_person_dict:dict):
             ball_data=_ball_data[_video.split("_")[0]],
             player_box_data=_player_box_data[_video.split("_")[0]],
             scale_raw_data=False,
-            dtw_mode="greedy",
+            dtw_mode="fast",
             dtw_th=9999,
             dist_th=58
         )
@@ -87,7 +87,6 @@ if __name__ == "__main__":
     drop_list = [i+".csv" for i in os.listdir("output")]
 
     all_data = fetch_data(DATA_DIR, file_list, drop_list=drop_list)
-    print("Extract Features from: {}".format(list(all_data.keys())))
     ball_data = fetch_trajectory(DATA_DIR)
     player_box_data = fetch_player_box(os.path.join(DATA_DIR, "PlayerDetectionRes"))
 
@@ -98,6 +97,8 @@ if __name__ == "__main__":
             "ball_data" : deepcopy(ball_data),
             "player_box_data" : deepcopy(player_box_data)
         }
+        break
+    print("Extract Features from: {}".format(list(data.keys())))
 
     all_people_fea = {}
     all_people_rounds = {}
