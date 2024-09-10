@@ -292,6 +292,7 @@ def draw_violin(features_df:pd.DataFrame, pt_res:pd.DataFrame, type_name):
 def build_model(features_df, pt_res, num_classes, type_name):
     fea_list = pt_res[pt_res["if_para"]].index.to_list()
     final_result = {}
+    if len(fea_list)==0: return {}
 
     rkf = RepeatedKFold(n_splits=5, n_repeats=6)
     X = features_df[fea_list]
@@ -376,26 +377,27 @@ def build_model(features_df, pt_res, num_classes, type_name):
             final_result['overall']['preds'].append(pred.tolist())
             final_result['overall']['preds_porb'].append(cls.predict_proba(x_test))
 
-        with open(os.path.join("ana_output", f"{type_name}.csv"), "w") as f:
-            for key in final_result['overall'].keys():
-                if key in ['fpr', 'tpr', 'thresholds', 'test_index', 'trues', 'preds', 'preds_porb']:
-                    continue
-                f.write("{} : {}".format(key, np.mean(final_result['overall'][key])))
+    with open(os.path.join("ana_output", f"{type_name}.txt"), "w") as f:
+        for key in final_result['overall'].keys():
+            if key in ['fpr', 'tpr', 'thresholds', 'test_index', 'trues', 'preds', 'preds_porb']:
+                continue
+            f.write("{} : {}\n".format(key, np.mean(final_result['overall'][key])))
 
-            if num_classes==3:
-                trues = [item for sublist in final_result["overall"]["trues"] for item in sublist]
-                preds_prob = [item for sublist in final_result["overall"]["preds_porb"] for item in sublist]
+        if num_classes==3:
+            trues = [item for sublist in final_result["overall"]["trues"] for item in sublist]
+            preds_prob = [item for sublist in final_result["overall"]["preds_porb"] for item in sublist]
 
-                f.write("Macro One-vs-Rest AUC : {}".format(roc_auc_score(trues, preds_prob, multi_class="ovr", average="macro")))
-                f.write("Weighted One-vs-Rest AUC : {}".format(roc_auc_score(trues, preds_prob, multi_class="ovr", average="weighted")))
-                f.write("Macro One-vs-One AUC : {}".format(roc_auc_score(trues, preds_prob, multi_class="ovo", average="macro")))
-                f.write("Weighted One-vs-One AUC : {}".format(roc_auc_score(trues, preds_prob, multi_class="ovo", average="weighted")))
-            else:
-                trues = [item for sublist in final_result["overall"]["trues"] for item in sublist]
-                preds_prob = [item[1] for sublist in final_result["overall"]["preds_porb"] for item in sublist]
-                f.write("AUC : {}".format(roc_auc_score(trues, preds_prob)))
+            f.write("Macro One-vs-Rest AUC : {}\n".format(roc_auc_score(trues, preds_prob, multi_class="ovr", average="macro")))
+            f.write("Weighted One-vs-Rest AUC : {}\n".format(roc_auc_score(trues, preds_prob, multi_class="ovr", average="weighted")))
+            f.write("Macro One-vs-One AUC : {}\n".format(roc_auc_score(trues, preds_prob, multi_class="ovo", average="macro")))
+            f.write("Weighted One-vs-One AUC : {}\n".format(roc_auc_score(trues, preds_prob, multi_class="ovo", average="weighted")))
+        else:
+            trues = [item for sublist in final_result["overall"]["trues"] for item in sublist]
+            preds_prob = [item[1] for sublist in final_result["overall"]["preds_porb"] for item in sublist]
+            f.write("AUC : {}\n".format(roc_auc_score(trues, preds_prob)))
 
     return final_result
+
 
 def draw_roc(final_result, num_classes, type_name):
     trues = [item for sublist in final_result["overall"]["trues"] for item in sublist]
@@ -485,6 +487,7 @@ def draw_roc(final_result, num_classes, type_name):
     plt.legend(loc="lower right")
     plt.savefig(f"pics/{type_name}_roc.png", dpi=200)
 
+
 def draw_cm(final_result):
     trues = [item for sublist in final_result["overall"]["trues"] for item in sublist]
     preds = [item for sublist in final_result["overall"]["preds"] for item in sublist]
@@ -519,6 +522,7 @@ if __name__ == "__main__":
 
     people_fea = {}
     for _p in people_list:
+        if _p in ["24071617_AD", "24071721_AD", "24070906_AD", "24070907_AD", "24071618_AD", "24070901_AD", "24071512_AD"]: continue
         people_fea[_p] = pd.read_csv(os.path.join(f"{FEA_DIR}/{_p}", "features.csv"), index_col=0)
 
     people_stat = pd.read_excel(os.path.join(DATA_DIR, "ParticipantsInfo.xlsx"), )
@@ -544,7 +548,7 @@ if __name__ == "__main__":
         features_df.to_csv(os.path.join("ana_output", f"{type_name}.csv"))
 
         pt_res = sig_test(features_df)
-        pt_res.to_csv(os.path.join("ana_output", f"sigfea_{type_name}.csv"))
+        pt_res.to_csv(os.path.join("ana_output", f"{type_name}_sigfea.csv"))
 
         draw_violin(
             features_df=features_df, 
@@ -558,19 +562,13 @@ if __name__ == "__main__":
             num_classes=NUM_CLASSES, 
             type_name=type_name
             )
-        
-        draw_cm(final_result=model_res)
+        if model_res:
+            draw_cm(final_result=model_res)
 
-        draw_roc(
-            final_result=model_res,
-            num_classes=NUM_CLASSES,
-            type_name=type_name
-            )
-        break
-
-
-
-
-
+            draw_roc(
+                final_result=model_res,
+                num_classes=NUM_CLASSES,
+                type_name=type_name
+                )
 
 

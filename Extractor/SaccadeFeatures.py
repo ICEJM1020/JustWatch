@@ -124,8 +124,8 @@ def extract_saccade_features(data, video_id):
 
 
 def compute_saccade_path_lite(df:pd.DataFrame):
-    _speeds = [0]
-    _angles = [0]
+    _speeds = []
+    _angles = []
     indices = list(df.index)
     _dura = (1 * EYE_SAMPLE_TIME ) / 1000.0
     df["Screen.x"] = df["Screen.x"] * VR_SCALE
@@ -147,9 +147,69 @@ def compute_saccade_path_lite(df:pd.DataFrame):
 def extract_saccade_features_lite(round_index, data:pd.DataFrame, ball_data_df:pd.DataFrame):
     _fea = {}
 
-    _speeds, _angles = compute_saccade_path_lite(data)
+    _speeds, _angles = compute_saccade_path_lite(data.copy())
     _fea = {**_fea, **compute_stat("SaccadeSpeed", _speeds)}
     _fea = {**_fea, **compute_stat("SaccadeAngel", _angles)}
+
+    round_start_index = ball_data_df[ball_data_df["round"]==round_index].index[0]
+    round_dura = ball_data_df[ball_data_df["round"]==round_index].shape[0]
+    eye_start_index = data.index[0]
+    _fea["SaccadeDelay"] = (eye_start_index-round_start_index) * EYE_SAMPLE_TIME
+    _fea["SaccadeDelayPercent"] = ((eye_start_index-round_start_index) / round_dura) * EYE_SAMPLE_TIME
+
+    return _fea
+
+
+def compute_saccade_path(df:pd.DataFrame, ball_data:pd.DataFrame):
+    _speeds = []
+    indices = list(df.index)
+    _dura = (1 * EYE_SAMPLE_TIME ) / 1000.0
+    df["Screen.x"] = df["Screen.x"] * VR_SCALE
+    df["Screen.y"] = df["Screen.y"] * VR_SCALE
+
+    ball_data["Ball.x"] = ball_data["Ball.x"] * VR_SCALE
+    ball_data["Ball.y"] = ball_data["Ball.y"] * VR_SCALE
+
+    for _i in range(1, len(indices)):
+        row_1 = df.loc[indices[_i - 1], :]
+        row_2 = df.loc[indices[_i], :]
+
+        _dist = np.sqrt((row_1["Screen.x"] - row_2["Screen.x"])**2 + (row_1["Screen.y"] - row_2["Screen.y"])**2)
+        _angle = np.arctan(_dist / VR_ZDIST) / np.pi * 180
+        _speeds.append(np.divide(_angle, _dura))
+
+    _eye_dist = np.sqrt((df.iloc[0, :]["Screen.x"] - df.iloc[-1, :]["Screen.x"])**2 + (df.iloc[0, :]["Screen.y"] - df.iloc[-1, :]["Screen.y"])**2)
+    _eye_amp = np.arctan(_eye_dist / VR_ZDIST) / np.pi * 180
+    _ball_dist = np.sqrt((ball_data.iloc[0, :]["Ball.x"] - ball_data.iloc[-1, :]["Ball.x"])**2 + (ball_data.iloc[0, :]["Ball.y"] - ball_data.iloc[-1, :]["Ball.y"])**2)
+    _ball_amp = np.arctan(_ball_dist / VR_ZDIST) / np.pi * 180
+
+    return _speeds, _eye_amp, _eye_amp/_ball_amp
+
+
+def add_saccade_features_lite(round_index, data:pd.DataFrame, ball_data_df:pd.DataFrame):
+    _fea = {}
+
+    _speeds, _ampli, _unitampli = compute_saccade_path(data.copy(), ball_data_df[ball_data_df["round"]==round_index].copy())
+    _fea = {**_fea, **compute_stat("SaccadeSpeed", _speeds)}
+    _fea["Amplitude"] = _ampli
+    _fea["UnitAmplitude"] = _unitampli
+
+    round_start_index = ball_data_df[ball_data_df["round"]==round_index].index[0]
+    round_dura = ball_data_df[ball_data_df["round"]==round_index].shape[0]
+    eye_start_index = data.index[0]
+    _fea["SaccadeDelay"] = (eye_start_index-round_start_index) * EYE_SAMPLE_TIME
+    _fea["SaccadeDelayPercent"] = ((eye_start_index-round_start_index) / round_dura) * EYE_SAMPLE_TIME
+
+    return _fea
+
+
+def extract_saccade_features(round_index, data:pd.DataFrame, ball_data_df:pd.DataFrame):
+    _fea = {}
+
+    _speeds, _ampli, _unitampli = compute_saccade_path(data.copy(), ball_data_df[ball_data_df["round"]==round_index].copy())
+    _fea = {**_fea, **compute_stat("SaccadeSpeed", _speeds)}
+    _fea["Amplitude"] = _ampli
+    _fea["UnitAmplitude"] = _unitampli
 
     round_start_index = ball_data_df[ball_data_df["round"]==round_index].index[0]
     round_dura = ball_data_df[ball_data_df["round"]==round_index].shape[0]

@@ -36,7 +36,7 @@ def compute_traj_range_overlap(concat_df:pd.DataFrame, eps:float=15.0, time_rang
     return concat_df["overlap"].sum() / concat_df.shape[0]
 
 
-def extract_trajectory(eye_data_df:pd.DataFrame, ball_data_df:pd.DataFrame, video_id, scale_to_percentage=False):
+def extract_trajectory_whole_game(eye_data_df:pd.DataFrame, ball_data_df:pd.DataFrame, video_id, scale_to_percentage=False):
     res = {}
 
     eye_data_df["frame"] = eye_data_df.index
@@ -96,6 +96,90 @@ def extract_trajectory_lite(round_index, data:pd.DataFrame, ball_data_df):
         )
     
     _fea["TrajectoryDTW"] = _dtw
+
+    return _fea
+
+
+def compute_ball_move(ball_line:pd.DataFrame):
+    _indeices = ball_line.index.to_list()
+    _dist = []
+    for i in range(1, len(_indeices)):
+        _dist.append(
+                np.sqrt(
+                        (ball_line.loc[_indeices[i], "Ball.x"] - ball_line.loc[_indeices[i-1], "Ball.x"])**2 + (ball_line.loc[_indeices[i],"Ball.y"] - ball_line.loc[_indeices[i-1],"Ball.y"])**2
+                    )
+            )
+    return np.sum(_dist)
+
+def compute_two_traj_angle(eye_traj:pd.DataFrame, ball_traj:pd.DataFrame):
+    # Line 1 points
+    x1, y1 = eye_traj.iloc[0, :]["Screen.x"], eye_traj.iloc[0, :]["Screen.y"]
+    x2, y2 = eye_traj.iloc[-1, :]["Screen.x"], eye_traj.iloc[-1, :]["Screen.y"]
+
+    # Line 2 points
+    x3, y3 = ball_traj.iloc[0, :]["Ball.x"], ball_traj.iloc[0, :]["Ball.y"]
+    x4, y4 = ball_traj.iloc[-1, :]["Ball.x"], ball_traj.iloc[-1, :]["Ball.y"]
+
+    # Create vectors for both lines
+    v1 = np.array([x2 - x1, y2 - y1])
+    v2 = np.array([x4 - x3, y4 - y3])
+
+    # Calculate the dot product
+    dot_product = np.dot(v1, v2)
+
+    # Calculate magnitudes of both vectors
+    magnitude_v1 = np.linalg.norm(v1)
+    magnitude_v2 = np.linalg.norm(v2)
+
+    # Compute the cosine of the angle
+    cos_theta = dot_product / (magnitude_v1 * magnitude_v2)
+
+    # Compute the angle in radians
+    angle_radians = np.arccos(cos_theta)
+
+    # Convert the angle to degrees
+    angle_degrees = np.degrees(angle_radians)
+
+    return angle_degrees
+
+
+def add_trajectory_lite(round_index, data:pd.DataFrame, ball_data_df):
+    _fea = {}
+    
+    _ball_df = ball_data_df[ball_data_df["round"]==round_index]
+    _dtw = compute_dtw(
+            line_1=data.loc[:, ["Screen.x", "Screen.y"]],
+            line_2=_ball_df.loc[:, ["Ball.x", "Ball.y"]],
+        )
+    
+    _ball_move = compute_ball_move(_ball_df.loc[:, ["Ball.x", "Ball.y"]].copy())
+
+    _fea["TrajDTW"] = _dtw * VR_SCALE
+    _fea["TrajDTWPerBallMove"] = (_dtw * VR_SCALE) / (_ball_move * VR_SCALE)
+    _fea["DirecAngle"] = compute_two_traj_angle(
+            eye_traj=data.loc[:, ["Screen.x", "Screen.y"]],
+            ball_traj=_ball_df.loc[:, ["Ball.x", "Ball.y"]].copy()
+        )
+
+    return _fea
+
+def extract_trajectory(round_index, data:pd.DataFrame, ball_data_df):
+    _fea = {}
+    
+    _ball_df = ball_data_df[ball_data_df["round"]==round_index]
+    _dtw = compute_dtw(
+            line_1=data.loc[:, ["Screen.x", "Screen.y"]],
+            line_2=_ball_df.loc[:, ["Ball.x", "Ball.y"]],
+        )
+    
+    _ball_move = compute_ball_move(_ball_df.loc[:, ["Ball.x", "Ball.y"]].copy())
+
+    _fea["TrajDTW"] = _dtw * VR_SCALE
+    _fea["TrajDTWPerBallMove"] = (_dtw * VR_SCALE) / (_ball_move * VR_SCALE)
+    _fea["DirecAngle"] = compute_two_traj_angle(
+            eye_traj=data.loc[:, ["Screen.x", "Screen.y"]],
+            ball_traj=_ball_df.loc[:, ["Ball.x", "Ball.y"]].copy()
+        )
 
     return _fea
 

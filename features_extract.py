@@ -15,7 +15,7 @@ import time
 
 from config import *
 from load_data import fetch_data, fetch_trajectory, fetch_player_box
-from Extractor.Extractor import extract_features
+from Extractor.Extractor import extract_features, add_features
 
 
 def extract_person(_person_dict:dict):
@@ -77,6 +77,54 @@ def extract_person(_person_dict:dict):
     return _person
 
 
+def add_person(_person_dict:dict):
+    start_time = time.time()
+    _person=_person_dict[0]
+    _person_data=_person_dict[1]["data"]
+    _ball_data=_person_dict[1]["ball_data"]
+
+    _person_fea = {}
+
+    with open(os.path.join(FEA_DIR, f"{_person}/match_rounds.json"), "r") as f:
+        people_match_round = json.load(f)
+
+    for _video in _person_data.keys():
+        # if not _video == "p7": continue
+
+        if _video in people_match_round.keys():
+            res = add_features(
+                    data=_person_data[_video], 
+                    ball_data=_ball_data[_video.split("_")[0]],
+                    match_rounds=people_match_round[_video]
+                )
+            _person_fea[_video] = {}
+            if res["attention_fea"]:
+                _person_fea[_video]["All"] = res["attention_fea"]
+            if res["saccade_fea"]:
+                _person_fea[_video].update(res["saccade_fea"])
+        else:
+            print(f"{_person} no match round in {_video}")
+
+    fea_res = {}
+    for _v, video_fea in _person_fea.items():
+        try:
+            for _r, _fea in video_fea.items():
+                fea_res[f"{_v}-{_r}"] = _fea
+        except:
+            continue
+    new_fea_df = pd.DataFrame(fea_res).T
+
+    out_dir = f"{FEA_DIR}/{_person}"
+    ori_fea_df = pd.read_csv(f"{out_dir}/features.csv", index_col=0)
+    drop_cols = list(filter(lambda x: x in new_fea_df.columns, ori_fea_df.columns))
+    ori_fea_df.drop(drop_cols, axis=1, inplace=True)
+    fea_df = pd.merge(left=ori_fea_df, right=new_fea_df, how="left", left_index=True, right_index=True)
+    fea_df.to_csv(f"{out_dir}/featuresNew.csv")
+
+    print(_person, time.time()-start_time)
+    return _person
+
+
 if __name__ == "__main__":
     if not os.path.exists("output"):
         os.mkdir("output")
@@ -105,6 +153,8 @@ if __name__ == "__main__":
     all_people_match_rounds = {}
 
     # Using a pool of processes
+    # with mp.Pool(processes=mp.cpu_count()) as pool:
+    #     results = pool.map(extract_person, data.items())
     with mp.Pool(processes=mp.cpu_count()) as pool:
-        results = pool.map(extract_person, data.items())
+        results = pool.map(add_person, data.items())
 

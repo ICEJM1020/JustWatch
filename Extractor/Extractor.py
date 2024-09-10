@@ -11,8 +11,8 @@ from config import *
 from Extractor.RoundMatcher import find_match_round_dtw, find_match_round_dtw_kmp
 from Extractor.utils import compute_stat, interplate_and_align, compute_dtw, max_circle_radius 
 from Extractor.WholeGameFeatures import extract_features_whole
-from Extractor.SaccadeFeatures import extract_saccade_features_lite
-from Extractor.TrajectoryFeatures import extract_trajectory_lite
+from Extractor.SaccadeFeatures import extract_saccade_features_lite, add_saccade_features_lite, extract_saccade_features
+from Extractor.TrajectoryFeatures import extract_trajectory_lite, add_trajectory_lite, extract_trajectory
 
 
 def extract_features_round(rounds:dict, data_df:pd.DataFrame, ball_data_df:pd.DataFrame):
@@ -21,16 +21,16 @@ def extract_features_round(rounds:dict, data_df:pd.DataFrame, ball_data_df:pd.Da
 
     res = {}
     for round_index, round_indices in rounds.items():
-        round_res = extract_saccade_features_lite(
-            round_index,
-            aligned_df.loc[round_indices, ["Screen.x", "Screen.y"]],
-            aligned_df.loc[:, ["Ball.x", "Ball.y", "round"]]
+        round_res = extract_saccade_features(
+                round_index,
+                aligned_df.loc[round_indices, ["Screen.x", "Screen.y"]],
+                aligned_df.loc[:, ["Ball.x", "Ball.y", "round"]]
             )
         
-        traj_res = extract_trajectory_lite(
-            round_index,
-            aligned_df.loc[round_indices, ["Screen.x", "Screen.y"]],
-            aligned_df.loc[:, ["Ball.x", "Ball.y", "round"]]
+        traj_res = extract_trajectory(
+                round_index,
+                aligned_df.loc[round_indices, ["Screen.x", "Screen.y"]],
+                aligned_df.loc[:, ["Ball.x", "Ball.y", "round"]]
             )
         res[round_index] = {**round_res, **traj_res}
     return res
@@ -44,7 +44,7 @@ def threshold_find_match_round_dtw(eye_data:pd.DataFrame, ball_data_df:pd.DataFr
 
     res = {}
     for _round, _round_index in rounds.items():
-        if _round:
+        if _round_index:
             if (max_circle_radius(eye_data.loc[_round_index, :]) >= dist_th) and (dtw_res[_round] <= dtw_th):
                 res[_round] = _round_index
 
@@ -77,3 +77,39 @@ def extract_features(data, ball_data, player_box_data, dtw_mode="fast", scale_ra
     # trajectory_features = extract_trajectory(data_df.loc[:, ["Screen.x", "Screen.y"]], video_id, scale_to_percentage=True)
 
     # return {**saccade_features, **trajectory_features}
+
+
+def add_saccade_features_round(rounds:dict, data_df:pd.DataFrame, ball_data_df:pd.DataFrame):
+    data_df["frame"] = data_df.index
+    aligned_df = interplate_and_align(data_df, ball_data_df, EYE_SAMPLE_RATE, VIDEO_FPS, convert_dist=False)
+
+    res = {}
+    for round_index, round_indices in rounds.items():
+        round_res = add_saccade_features_lite(
+            float(round_index),
+            aligned_df.loc[round_indices, ["Screen.x", "Screen.y"]],
+            aligned_df.loc[:, ["Ball.x", "Ball.y", "round"]]
+            )
+        
+        traj_res = add_trajectory_lite(
+            float(round_index),
+            aligned_df.loc[round_indices, ["Screen.x", "Screen.y"]],
+            aligned_df.loc[:, ["Ball.x", "Ball.y", "round"]]
+            )
+        res[round_index] = {**round_res, **traj_res}
+    return res
+
+
+def add_features(data, ball_data, match_rounds):
+    data_df = pd.DataFrame(data).T
+    data_df.ffill(inplace=True)
+    data_df.bfill(inplace=True)
+
+    ball_data_df = pd.DataFrame(ball_data)
+    
+    saccade_features = add_saccade_features_round(match_rounds, data_df.copy(), ball_data_df.copy())
+    
+    return {
+            "saccade_fea": saccade_features,
+            "attention_fea": {},
+        }
