@@ -24,13 +24,40 @@ VIDEO_FPS = 30
 """ 
 For analyzing data 
 """ 
-FEA_DIR = "/Users/timberzhang/Documents/Documents/2024-JustWatch/OutputRecord/Non-Scale"
-# FEA_DIR = "/Users/timberzhang/Documents/Documents/2024-JustWatch/OutputRecord/Scale"
+FEA_DIR = "/Users/timberzhang/Documents/Documents/2024-JustWatch/OutputRecord/GreedyNonScale"
+
 NUM_CLASSES=3
 VIDEO_TYPES=["p", "1", "N_L"]
+# VIDEO_TYPE_LIST={
+#     "pingpang_first_nolabel": ["p", "1", "N_L"],
+#     "wangqiu_first_nolabel": ["w", "1", "N_L"],
+#     "pingpang_multi_nolabel": ["p", "2", "N_L"],
+#     "wangqiu_multi_nolabel": ["w", "2", "N_L"],
+#     "pingpang_first_alllabel": ["p", "1", "R_S", "A_S", "R_A", "A_A"],
+#     "wangqiu_first_alllabel": ["w", "1", "R_S", "A_S", "R_A", "A_A"],
+#     "pingpang_first_shining": ["p", "1", "R_S", "A_S"],
+#     "wangqiu_first_shining": ["w", "1", "R_S", "A_S"],
+#     "pingpang_first_arrow": ["p", "1", "R_A", "A_A"],
+#     "wangqiu_first_arrow": ["w", "1", "R_A", "A_A"],
+#     "pingpang_first_random": ["p", "1", "R_A", "R_S"],
+#     "wangqiu_first_random": ["w", "1", "A_S", "A_A"],
+#     "pingpang_first_all": ["p", "1", "A_S", "A_R"],
+#     "wangqiu_first_all": ["w", "1", "A_S", "A_R"],
+#     "pingpang_first_random_arrow": ["p", "1", "R_A"],
+#     "pingpang_first_all_arrow": ["p", "1", "A_A"],
+#     "pingpang_first_random_shining": ["p", "1", "R_S"],
+#     "pingpang_first_all_shining": ["p", "1", "A_S"],
+#     "wangqiu_first_random_arrow": ["p", "1", "R_A"],
+#     "wangqiu_first_all_arrow": ["p", "1", "A_A"],
+#     "wangqiu_first_random_shining": ["p", "1", "R_S"],
+#     "wangqiu_first_all_shining": ["p", "1", "A_S"],
+# }
+
+# [ball (w, p), session ([0,1,2,3]), number (f, b, all), twice (0,1,2)]
 VIDEO_TYPE_LIST={
-    "pingpang_first_nolabel": ["p", "1", "N_L"],
-    "wangqiu_first_nolabel": ["w", "1", "N_L"],
+    "pingpang_nolabel" : ["p", [0,2], "all", "0"],
+    "pingpang_first_nolabel": ["p", "0", "N_L"],
+    "wangqiu_first_nolabel": ["w", "0", "N_L"],
     "pingpang_multi_nolabel": ["p", "2", "N_L"],
     "wangqiu_multi_nolabel": ["w", "2", "N_L"],
     "pingpang_first_alllabel": ["p", "1", "R_S", "A_S", "R_A", "A_A"],

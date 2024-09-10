@@ -44,8 +44,9 @@ def threshold_find_match_round_dtw(eye_data:pd.DataFrame, ball_data_df:pd.DataFr
 
     res = {}
     for _round, _round_index in rounds.items():
-        if (max_circle_radius(eye_data.loc[_round_index, :]) >= dist_th) and (dtw_res[_round] <= dtw_th):
-            res[_round] = _round_index
+        if _round:
+            if (max_circle_radius(eye_data.loc[_round_index, :]) >= dist_th) and (dtw_res[_round] <= dtw_th):
+                res[_round] = _round_index
 
     return res, rounds
 

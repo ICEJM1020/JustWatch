@@ -89,38 +89,43 @@ def find_match_round_dtw(eye_data_df:pd.DataFrame, ball_data_df:pd.DataFrame, or
 
         match_indice = None
         min_dtw = np.inf
-        for idx in temp.index:
-            for window_size in range(MIN_DTW_WINDOW, temp.shape[0]):
-                # temp_window = aligned_df.loc[_shift_idx:_shift_idx+window_size, :]
-                temp_window = aligned_df.loc[ idx : idx + window_size, :]
-                if temp_window.shape[0] < MIN_DTW_WINDOW: continue
-                _indices = temp_window.index
 
-                if temp_window.shape[0] < temp.shape[0]:
-                    temp_window = interplate_enlarge(temp_window, size=temp.shape[0])
+        try:
+            for idx in temp.index:
+                for window_size in range(MIN_DTW_WINDOW, temp.shape[0]):
+                    # temp_window = aligned_df.loc[_shift_idx:_shift_idx+window_size, :]
+                    temp_window = aligned_df.loc[ idx : idx + window_size, :]
+                    if temp_window.shape[0] < MIN_DTW_WINDOW: continue
+                    _indices = temp_window.index
 
-                if order==0:
-                    _dtw = compute_dtw(
-                        line_1 = temp.loc[:, ["Ball.x", "Ball.y"]],
-                        line_2 = temp_window.loc[:, ["Screen.x", "Screen.y"]],
-                        scale_to_percentage=False
-                    )
-                elif order>0:
-                    _dtw = compute_gradient_dtw(
-                            line_1=temp.loc[:, ["frame", "Ball.x", "Ball.y"]],
-                            line_2=temp_window.loc[:, ["frame", "Screen.x", "Screen.y"]],
-                            order=order,
+                    if temp_window.shape[0] < temp.shape[0]:
+                        temp_window = interplate_enlarge(temp_window, size=temp.shape[0])
+
+                    if order==0:
+                        _dtw = compute_dtw(
+                            line_1 = temp.loc[:, ["Ball.x", "Ball.y"]],
+                            line_2 = temp_window.loc[:, ["Screen.x", "Screen.y"]],
                             scale_to_percentage=False
-                    )
-                else:
-                    raise Exception("Order of gradient must be positive")
-                
-                if _dtw < min_dtw:
-                    min_dtw = _dtw
-                    match_indice = _indices
-              
-        dtw_res[_round] = min_dtw
-        res[_round] = match_indice.to_list()
+                        )
+                    elif order>0:
+                        _dtw = compute_gradient_dtw(
+                                line_1=temp.loc[:, ["frame", "Ball.x", "Ball.y"]],
+                                line_2=temp_window.loc[:, ["frame", "Screen.x", "Screen.y"]],
+                                order=order,
+                                scale_to_percentage=False
+                        )
+                    else:
+                        raise Exception("Order of gradient must be positive")
+                    
+                    if _dtw < min_dtw:
+                        min_dtw = _dtw
+                        match_indice = _indices
+        except:
+            dtw_res[_round] = np.inf
+            res[_round] = None
+        else:
+            dtw_res[_round] = min_dtw
+            res[_round] = match_indice.to_list()
 
     return res, dtw_res
 
@@ -146,42 +151,46 @@ def find_match_round_dtw_kmp(eye_data_df:pd.DataFrame, ball_data_df:pd.DataFrame
         # for window_size in range(MIN_DTW_WINDOW, temp.shape[0]):
         max_idx = list(aligned_df[(aligned_df["round"]==_round+1) | (aligned_df["round"]==_round)].index)[-1]
 
-        while _last_idx < max_idx:
-            # temp_window = aligned_df.loc[_shift_idx:_shift_idx+window_size, :]
-            temp_window = aligned_df.loc[ _shift_idx : _last_idx, :]
-            _indices = temp_window.index
+        try:
+            while _last_idx < max_idx:
+                # temp_window = aligned_df.loc[_shift_idx:_shift_idx+window_size, :]
+                temp_window = aligned_df.loc[ _shift_idx : _last_idx, :]
+                _indices = temp_window.index
 
-            if temp_window.shape[0] < temp.shape[0]:
-                temp_window = interplate_enlarge(temp_window, size=temp.shape[0])
+                if temp_window.shape[0] < temp.shape[0]:
+                    temp_window = interplate_enlarge(temp_window, size=temp.shape[0])
 
-            if temp_window.shape[0] < MIN_DTW_WINDOW: continue
+                if temp_window.shape[0] < MIN_DTW_WINDOW: continue
 
-            if order==0:
-                _dtw = compute_dtw(
-                    line_1 = temp.loc[:, ["Ball.x", "Ball.y"]],
-                    line_2 = temp_window.loc[:, ["Screen.x", "Screen.y"]],
-                    scale_to_percentage=False
-                )
-            elif order>0:
-                _dtw = compute_gradient_dtw(
-                        line_1=temp.loc[:, ["frame", "Ball.x", "Ball.y"]],
-                        line_2=temp_window.loc[:, ["frame", "Screen.x", "Screen.y"]],
-                        order=order,
+                if order==0:
+                    _dtw = compute_dtw(
+                        line_1 = temp.loc[:, ["Ball.x", "Ball.y"]],
+                        line_2 = temp_window.loc[:, ["Screen.x", "Screen.y"]],
                         scale_to_percentage=False
-                )
-            else:
-                raise Exception("Order of gradient must be positive")
-            
-            _last_idx += 1
-            if _dtw < min_dtw:
-                min_dtw = _dtw
-                match_indice = _indices
-            else:
-                _shift_idx = _last_idx
-                _last_idx = _last_idx + MIN_DTW_WINDOW
-
-        dtw_res[_round] = min_dtw
-        res[_round] = match_indice.to_list()
+                    )
+                elif order>0:
+                    _dtw = compute_gradient_dtw(
+                            line_1=temp.loc[:, ["frame", "Ball.x", "Ball.y"]],
+                            line_2=temp_window.loc[:, ["frame", "Screen.x", "Screen.y"]],
+                            order=order,
+                            scale_to_percentage=False
+                    )
+                else:
+                    raise Exception("Order of gradient must be positive")
+                
+                _last_idx += 1
+                if _dtw < min_dtw:
+                    min_dtw = _dtw
+                    match_indice = _indices
+                else:
+                    _shift_idx = _last_idx
+                    _last_idx = _last_idx + MIN_DTW_WINDOW
+        except:
+            dtw_res[_round] = np.inf
+            res[_round] = None
+        else:
+            dtw_res[_round] = min_dtw
+            res[_round] = match_indice.to_list()
 
     return res, dtw_res
 

@@ -97,7 +97,7 @@ if __name__ == "__main__":
             "ball_data" : deepcopy(ball_data),
             "player_box_data" : deepcopy(player_box_data)
         }
-        break
+        
     print("Extract Features from: {}".format(list(data.keys())))
 
     all_people_fea = {}
