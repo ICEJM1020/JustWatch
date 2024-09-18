@@ -4,10 +4,12 @@ Author: Xucheng(Timber) Zhang
 Date: 2024-09-05
 """ 
 import os
-import pandas as pd
+import shutil
+import json
 import warnings
 warnings.filterwarnings("ignore")
 
+import pandas as pd
 from scipy.stats import shapiro
 import seaborn as sns
 sns.set_theme(style="whitegrid")
@@ -119,7 +121,7 @@ def StatsFeatures_V1(all_people_fea:dict, all_people_stat:pd.DataFrame, fea_list
     return res
 
 
-def StatsFeatures(all_people_fea:dict, all_people_stat:pd.DataFrame, fea_list:list, session:list=[0], ball:str="p", number:str="all", twice=0, num_classes=3):
+def StatsFeatures(all_people_fea:dict, all_people_stat:pd.DataFrame, fea_list:list, session:list=[0], ball:str="p", number:str="all", stimul_type:str="all" ,twice=0, num_classes=3):
     assert (number in ["f", "b", "all"]), "input number like \"f\" first 2, \"b\" last 2, \"all\" all number"
     if num_classes==3:
         diag_map ={
@@ -138,12 +140,13 @@ def StatsFeatures(all_people_fea:dict, all_people_stat:pd.DataFrame, fea_list:li
 
     res={}
     for _p in all_people_fea.keys():
-        _ball_list = list(filter(lambda x:x.startswith(ball), all_people_fea[_p].index))
+        video_list = list(filter(lambda x:x.startswith(ball), all_people_fea[_p].index))
 
         _session_list = []
         for _v_s in session:
             _v_ids = list(filter(lambda x: x.split("-")[0].split("_")[-3]==str(_v_s), all_people_fea[_p].index))
             _session_list = list(set(_session_list).union(set(_v_ids)))
+        video_list = list(set(video_list).intersection(set(_session_list)))
 
         _number_list = []
         if number=="f":
@@ -151,16 +154,26 @@ def StatsFeatures(all_people_fea:dict, all_people_stat:pd.DataFrame, fea_list:li
         elif number=="b":
             _number_list = list(filter(lambda x: (x.split("-")[0].split("_")[-2]=="2") or (x.split("-")[0].split("_")[-2]=="3"), all_people_fea[_p].index))
         else:
-            _number_list = _session_list
-        video_list = list(set(_session_list).intersection(set(_number_list)))
-        video_list = list(set(video_list).intersection(set(_ball_list)))
+            _number_list = video_list
+        video_list = list(set(video_list).intersection(set(_number_list)))
 
-        if twice==2:
-            video_list = list(filter(lambda x: not x.split("-")[0].endswith("_1"), video_list))
-        elif twice==1:
-            video_list = list(filter(lambda x: x.split("-")[0].endswith("_1"), video_list))
+        _stimul_list = []
+        if stimul_type=="r":
+            _stimul_list = list(filter(lambda x: ("R_A" in x.split("-")[0]) or ("R_S" in x.split("-")[0]), all_people_fea[_p].index))
+        elif stimul_type=="a":
+            _stimul_list = list(filter(lambda x: ("A_A" in x.split("-")[0]) or ("A_S" in x.split("-")[0]), all_people_fea[_p].index))
         else:
-            video_list = video_list
+            _stimul_list = video_list
+        video_list = list(set(video_list).intersection(set(_stimul_list)))
+
+        __multi_list = []
+        if twice==2:
+            __multi_list = list(filter(lambda x: not x.split("-")[0].endswith("_1"), video_list))
+        elif twice==1:
+            __multi_list = list(filter(lambda x: x.split("-")[0].endswith("_1"), video_list))
+        else:
+            __multi_list = video_list
+        video_list = list(set(video_list).intersection(set(__multi_list)))
             
         # print(_p)
         # print(video_list)
@@ -183,20 +196,21 @@ def StatsFeatures(all_people_fea:dict, all_people_stat:pd.DataFrame, fea_list:li
         except:
             continue
         else:
-            res[_p] = {
-                **mean_val.to_dict(),
-                **std_val.to_dict(),
-                **max_val.to_dict(),
-                **min_val.to_dict(),
-            }
-            res[_p]["label"] = diag_map[_diag]
+            if not _diag=="-":
+                res[_p] = {
+                    **mean_val.to_dict(),
+                    **std_val.to_dict(),
+                    **max_val.to_dict(),
+                    **min_val.to_dict(),
+                }
+                res[_p]["label"] = diag_map[_diag]
 
     res = pd.DataFrame(res).T.astype(np.float32)
     if num_classes==3:
         res["diag"] = res["label"].map({
             0:"HC",
             1:"MCI",
-            2:"Mild-AD",
+            2:"MMAD",
         })
     else:
         res["diag"] = res["label"].map({
@@ -294,7 +308,7 @@ def build_model(features_df, pt_res, num_classes, type_name):
     final_result = {}
     if len(fea_list)==0: return {}
 
-    rkf = RepeatedKFold(n_splits=5, n_repeats=6)
+    rkf = RepeatedKFold(n_splits=5, n_repeats=20)
     X = features_df[fea_list]
     
     final_result = {}
@@ -314,7 +328,7 @@ def build_model(features_df, pt_res, num_classes, type_name):
         final_result['overall']['preds_porb'] = []
 
         for i, (train_index, test_index) in enumerate(rkf.split(X)):
-            final_result['overall']['test_index'].append(test_index)
+            final_result['overall']['test_index'].append(test_index.tolist())
 
             # cls = RandomForestClassifier(20, max_depth=5)
             cls = RandomForestClassifier(n_estimators=5, max_depth=3)
@@ -330,15 +344,15 @@ def build_model(features_df, pt_res, num_classes, type_name):
             final_result['overall']['pre'].append(precision_score(y_test, pred))
             final_result['overall']['recall'].append(recall_score(y_test, pred))
             final_result['overall']['f1'].append(f1_score(y_test, pred))
-            fpr, tpr, thresholds = roc_curve(y_test, pred)
-            final_result['overall']['fpr'].append(fpr)
-            final_result['overall']['tpr'].append(tpr)
-            final_result['overall']['thresholds'].append(thresholds)
+            fpr, tpr, thresholds = roc_curve(y_test, pred.tolist())
+            final_result['overall']['fpr'].append(fpr.tolist())
+            final_result['overall']['tpr'].append(tpr.tolist())
+            final_result['overall']['thresholds'].append(thresholds.tolist())
             final_result['overall']['auc'].append(auc(fpr, tpr))
 
             final_result['overall']['trues'].append(y_test.to_list())
             final_result['overall']['preds'].append(pred.tolist())
-            final_result['overall']['preds_porb'].append(cls.predict_proba(x_test))
+            final_result['overall']['preds_porb'].append(cls.predict_proba(x_test).tolist())
     if num_classes==3:
         final_result['overall'] = {}
         final_result['overall']['acc'] = []
@@ -354,7 +368,7 @@ def build_model(features_df, pt_res, num_classes, type_name):
         final_result['overall']['preds_porb'] = []
 
         for i, (train_index, test_index) in enumerate(rkf.split(X)):
-            final_result['overall']['test_index'].append(test_index)
+            final_result['overall']['test_index'].append(test_index.tolist())
 
             cls = RandomForestClassifier(n_estimators=5, max_depth=5)
             # cls = AdaBoostClassifier(n_estimators=5, learning_rate=0.75)
@@ -375,8 +389,21 @@ def build_model(features_df, pt_res, num_classes, type_name):
 
             final_result['overall']['trues'].append(y_test.to_list())
             final_result['overall']['preds'].append(pred.tolist())
-            final_result['overall']['preds_porb'].append(cls.predict_proba(x_test))
+            final_result['overall']['preds_porb'].append(cls.predict_proba(x_test).tolist())
 
+    stat = pd.DataFrame(final_result["overall"])
+
+    best_acc=0
+    best_indices = []
+    for indices in np.array(stat.index).reshape(-1, 5):
+        _acc = stat.iloc[indices.tolist(),:]["acc"].mean()
+        if _acc > best_acc:
+            best_acc = _acc
+            best_indices = indices
+    final_result["overall"] = stat.iloc[best_indices, :].to_dict('list')
+
+    with open(os.path.join("ana_output", f"{type_name}_config.json"), "w") as f:
+        json.dump(final_result, f)
     with open(os.path.join("ana_output", f"{type_name}.txt"), "w") as f:
         for key in final_result['overall'].keys():
             if key in ['fpr', 'tpr', 'thresholds', 'test_index', 'trues', 'preds', 'preds_porb']:
@@ -445,29 +472,43 @@ def draw_roc(final_result, num_classes, type_name):
 
     # Plot all ROC curves
     plt.figure(figsize=(9,9), dpi=200)
-    plt.plot(
-        fpr["micro"],
-        tpr["micro"],
-        label="micro-average ROC curve (area = {0:0.2f})".format(roc_auc["micro"]),
-        color="deeppink",
-        linestyle=":",
-        linewidth=4,
-    )
+    if NUM_CLASSES==3:
+        diease_map = {
+                0:"HC",
+                1:"MCI",
+                2:"Mild-AD",
+            }
+        plt.plot(
+            fpr["micro"],
+            tpr["micro"],
+            label="micro-average ROC curve (area = {0:0.2f})".format(roc_auc["micro"]),
+            color="deeppink",
+            linestyle=":",
+            linewidth=4,
+        )
 
-    plt.plot(
-        fpr["macro"],
-        tpr["macro"],
-        label="macro-average ROC curve (area = {0:0.2f})".format(roc_auc["macro"]),
-        color="navy",
-        linestyle=":",
-        linewidth=4,
-    )
-
-    diease_map = {
-            0:"HC",
-            1:"MCI",
-            2:"Mild-AD",
-        }
+        plt.plot(
+            fpr["macro"],
+            tpr["macro"],
+            label="macro-average ROC curve (area = {0:0.2f})".format(roc_auc["macro"]),
+            color="navy",
+            linestyle=":",
+            linewidth=4,
+        )
+    else:
+        diease_map = {
+                0:"HC",
+                1:"PG"
+            }
+        plt.plot(
+            fpr["micro"],
+            tpr["micro"],
+            label="Mean ROC curve (area = {0:0.2f})".format(roc_auc["micro"]),
+            color="deeppink",
+            linestyle=":",
+            linewidth=4,
+        )
+        
     colors = cycle(["aqua", "darkorange", "cornflowerblue"])
     for i, color in zip(range(num_classes), colors):
         plt.plot(
@@ -499,19 +540,35 @@ def draw_cm(final_result):
     sns.heatmap(C2, annot=True, ax=ax, cmap="YlGn", linewidth=.8) 
 
     if NUM_CLASSES==3:
-        ax.set_yticklabels(['HC', 'MCI', 'Mild-AD'])
-        ax.set_xticklabels(['HC', 'MCI', 'Mild-AD'])
+        ax.set_yticklabels(['HC', 'MCI', 'MMAD'])
+        ax.set_xticklabels(['HC', 'MCI', 'MMAD'])
     else:
-        ax.set_yticklabels(['HC', 'PS'])
-        ax.set_xticklabels(['HC', 'PS'])
+        ax.set_yticklabels(['HC', 'PG'])
+        ax.set_xticklabels(['HC', 'PG'])
 
     plt.setp(ax.get_yticklabels(), rotation=0)
     ax.set_xlabel('Prediction')
     ax.set_ylabel('Target')
+    plt.tight_layout()
     plt.savefig(f"pics/{type_name}_cm.png", dpi=200)
 
 
+def fetch_overall(aim_ana_dir):
+    groups_file = list(filter(lambda x: x.endswith(".txt"), os.listdir(aim_ana_dir)))
+    res = {}
+    for file in groups_file:
+        groups_name = file.split(".")[0]
+        _res = {}
+        with open(os.path.join(aim_ana_dir, file), "r") as f:
+            metrics_lines = f.readlines()
+        for metrics in metrics_lines:
+            _res[metrics.split(" : ")[0]] = metrics.split(" : ")[1][:-1]
+        res[groups_name] = _res
+    return pd.DataFrame(res, dtype=np.float32).T
+
+
 if __name__ == "__main__":
+
     if not os.path.exists("ana_output"):
         os.mkdir("ana_output")
     if not os.path.exists("pics"):
@@ -522,8 +579,11 @@ if __name__ == "__main__":
 
     people_fea = {}
     for _p in people_list:
-        if _p in ["24071617_AD", "24071721_AD", "24070906_AD", "24070907_AD", "24071618_AD", "24070901_AD", "24071512_AD"]: continue
-        people_fea[_p] = pd.read_csv(os.path.join(f"{FEA_DIR}/{_p}", "features.csv"), index_col=0)
+        if _p in DROP_LIST: continue
+        try:
+            people_fea[_p] = pd.read_csv(os.path.join(f"{FEA_DIR}/{_p}", "featuresNew.csv"), index_col=0)
+        except:
+            people_fea[_p] = pd.read_csv(os.path.join(f"{FEA_DIR}/{_p}", "features.csv"), index_col=0)
 
     people_stat = pd.read_excel(os.path.join(DATA_DIR, "ParticipantsInfo.xlsx"), )
 
@@ -538,11 +598,12 @@ if __name__ == "__main__":
         features_df = StatsFeatures(
             all_people_fea=people_fea,
             all_people_stat=people_stat,
-            fea_list=WHOLE_FEA_LIST+SACCADE_FEA_LIST,
+            fea_list=FEA_LIST,
             ball=video_types[0],
             session=video_types[1],
             number=video_types[2],
             twice=video_types[3],
+            stimul_type=video_types[4],
             num_classes=NUM_CLASSES
         )
         features_df.to_csv(os.path.join("ana_output", f"{type_name}.csv"))
@@ -570,5 +631,15 @@ if __name__ == "__main__":
                 num_classes=NUM_CLASSES,
                 type_name=type_name
                 )
+
+    final_out = f"Ana_{NUM_CLASSES}C"
+    if os.path.exists(final_out):
+        shutil.rmtree(final_out)
+    os.mkdir(final_out)
+    res = fetch_overall("ana_output")
+    res.to_csv(os.path.join(final_out, "result.csv"))
+    shutil.move('ana_output', f'Ana_{NUM_CLASSES}C/ana_output')
+    shutil.move('pics', f'Ana_{NUM_CLASSES}C/pics')
+
 
 

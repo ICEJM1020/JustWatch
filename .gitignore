@@ -157,6 +157,7 @@ dmypy.json
 # Cython debug symbols
 cython_debug/
 
+Ana_*
 ana_output
 output
 pics

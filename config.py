@@ -53,55 +53,95 @@ VIDEO_TYPES=["p", "1", "N_L"]
 #     "wangqiu_first_all_shining": ["p", "1", "A_S"],
 # }
 
-# [ball (w, p), session ([0,1,2,3]), number (f, b, all), twice (0,1,2)]
+# [ball (w, p), session ([0,1,2,3]), number (f,b,all), twice (0,1,2), stimul_type (r,a,all)]
 VIDEO_TYPE_LIST={
-	
-	# YES or NO label
-	"pingpang_label_N": ["p", [0], "all", "0"],
-	"wangqiu_label_N": ["w", [0], "all", "0"],
+    ## Five main
+    "pingpang_no" : ["p", [0], "all", "0", "all"],
+    "pingpang_ra" : ["p", [3], "f", "0", "r"],
+    "pingpang_rs" : ["p", [1], "all", "0", "r"],
+    "pingpang_aa" : ["p", [3], "f", "0", "a"],
+    "pingpang_as" : ["p", [1], "all", "0", "a"],
+    
+    "wangqiu_no" : ["w", [0], "all", "0", "all"],
+    "wangqiu_ra" : ["w", [3], "f", "0", "r"],
+    "wangqiu_rs" : ["w", [1], "all", "0", "r"],
+    "wangqiu_aa" : ["w", [3], "f", "0", "a"],
+    "wangqiu_as" : ["w", [1], "all", "0", "a"],
 
-	"pingpang_label_Y": ["p", [1], "all", "0"],
-	"wangqiu_label_Y": ["w", [1], "all", "0"],
+	# BEFORE and AFTER shining
+	"pingpang_1C": ["p", [0], "f", "0", "all"],
+	"pingpang_2C": ["p", [2], "f", "0", "all"],
+	"wangqiu_1C": ["w", [0], "f", "0", "all"],
+	"wangqiu_2C": ["w", [2], "f", "0", "all"],
+    
+	# Watch Again
+	"pingpang_watch": ["p", [0], "f", "0", "all"],
+	"pingpang_again": ["p", [0], "b", "0", "all"],
+	"wangqiu_watch": ["w", [0], "f", "0", "all"],
+	"wangqiu_again": ["w", [0], "b", "0", "all"],
+
+    # Watch Same Again
+	"pingpang_firstseen": ["p", [0], "all", "1", "all"],
+	"pingpang_multiseen": ["p", [0], "all", "2", "all"],
+	"wangqiu_firstseen": ["w", [0], "f", "1", "all"],
+	"wangqiu_multiseen": ["w", [0], "f", "2", "all"],
+
+	# YES or NO label
+	# "pingpang_label_N": ["p", [0], "all", "0"],
+	# "wangqiu_label_N": ["w", [0], "all", "0"],
+
+	# "pingpang_label_Y": ["p", [1], "all", "0"],
+	# "wangqiu_label_Y": ["w", [1], "all", "0"],
 
 
 	# different CONTENT in different LABEL
-	"pingpang": ["p", [0, 1, 2, 3], "all", "0"],
-	"wangqiu": ["w", [0, 1, 2, 3], "all", "0"],
+	# "pingpang": ["p", [0, 1, 2, 3], "all", "0"],
+	# "wangqiu": ["w", [0, 1, 2, 3], "all", "0"],
 
-	"pingpang_noarrow": ["p", [0, 1, 2], "all", "0"],
-	"wangqiu_noarrow": ["w", [0, 1, 2], "all", "0"],
+	# "pingpang_noarrow": ["p", [0, 1, 2], "all", "0"],
+	# "wangqiu_noarrow": ["w", [0, 1, 2], "all", "0"],
 
-	"pingpang_nolabel": ["p", [0, 2], "all", "0"],
-	"wangqiu_nolabel": ["w", [0, 2], "all", "0"],
+	# "pingpang_nolabel": ["p", [0, 2], "all", "0"],
+	# "wangqiu_nolabel": ["w", [0, 2], "all", "0"],
 	
-	"pingpang_shining": ["p", [1], "all", "0"],
-	"wangqiu_shining": ["w", [1], "all", "0"],
+	# "pingpang_shining": ["p", [1], "all", "0"],
+	# "wangqiu_shining": ["w", [1], "all", "0"],
 
-	"pingpang_arrow": ["p", [3], "all", "0"],
-	"wangqiu_arrow": ["w", [3], "all", "0"],
+	# "pingpang_arrow": ["p", [3], "all", "0"],
+	# "wangqiu_arrow": ["w", [3], "all", "0"],
 	
 	
 	# BEFORE and AFTER shining
-	"pingpang_1C": ["p", [0], "all", "0"],
-	"pingpang_2C": ["p", [2], "all", "0"],
-	"wangqiu_1C": ["w", [0], "all", "0"],
-	"wangqiu_2C": ["w", [2], "all", "0"],
+	# "pingpang_1C": ["p", [0], "all", "0"],
+	# "pingpang_2C": ["p", [2], "all", "0"],
+	# "wangqiu_1C": ["w", [0], "all", "0"],
+	# "wangqiu_2C": ["w", [2], "all", "0"],
 	
-
 	# different LABEL in different CONTENT
-	"pingpang_shinin_content": ["p", [1], "f", "0"],
-	"pingpang_arrow_content": ["p", [3], "f", "0"],
+	# "pingpang_shinin_content": ["p", [1], "f", "0"],
+	# "pingpang_arrow_content": ["p", [3], "f", "0"],
 
-	"wangqiu_shining_content": ["w", [1], "f", "0"],
-	"wangqiu_arrow_content": ["w", [3], "f", "0"],
+	# "wangqiu_shining_content": ["w", [1], "f", "0"],
+	# "wangqiu_arrow_content": ["w", [3], "f", "0"],
 
-    # first seen vs multiple seen
-	"pingpang_firstseen": ["p", [0,1,2,3], "all", "1"],
-	"pingpang_multiseen": ["p", [0,1,2,3], "all", "2"],
-	"wangqiu_firstseen": ["w", [0,1,2,3], "f", "1"],
-	"wangqiu_multiseen": ["w", [0,1,2,3], "f", "2"],
+    # # first seen vs multiple seen
+	# "pingpang_firstseen": ["p", [0,2], "all", "1", "all"],
+	# "pingpang_multiseen": ["p", [0,2], "all", "2", "all"],
+	# "wangqiu_firstseen": ["w", [0,2], "f", "1", "all"],
+	# "wangqiu_multiseen": ["w", [0,2], "f", "2", "all"],
 }
+
+DROP_LIST = [
+    '24070901_AD',
+	# '24082302_AD',
+	'24071619_AD',
+	# '24090311_AD',
+	# '24090915_AD',
+	'24071617_AD',
+	'24071513_AD'
+	]
 
 WHOLE_FEA_LIST = ["MatchRoundRatio",]
 # whole_fea_list = ["Player1AttentionRatio","Player2AttentionRatio","Player1MinToCircle","Player2MinToCircle","MatchRoundRatio",]
 SACCADE_FEA_LIST = ["SaccadeSpeed_Mean","SaccadeSpeed_Max","SaccadeSpeed_Std","SaccadeAngel_Mean","SaccadeAngel_Max","SaccadeAngel_Std","SaccadeDelay","SaccadeDelayPercent","TrajectoryDTW"]
+FEA_LIST = ["MatchRoundRatio","SaccadeSpeed_Mean","SaccadeSpeed_Max","SaccadeSpeed_Std","Amplitude","UnitAmplitude","SaccadeDelay","SaccadeDelayPercent","TrajDTW","TrajDTWPerBallMove","TrajDTWPerEyeMove","DirecAngle"]

@@ -186,7 +186,7 @@ def compute_saccade_path(df:pd.DataFrame, ball_data:pd.DataFrame):
     return _speeds, _eye_amp, _eye_amp/_ball_amp
 
 
-def add_saccade_features_lite(round_index, data:pd.DataFrame, ball_data_df:pd.DataFrame):
+def modify_saccade_features_lite(round_index, data:pd.DataFrame, ball_data_df:pd.DataFrame):
     _fea = {}
 
     _speeds, _ampli, _unitampli = compute_saccade_path(data.copy(), ball_data_df[ball_data_df["round"]==round_index].copy())

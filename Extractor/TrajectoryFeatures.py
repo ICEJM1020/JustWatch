@@ -8,7 +8,7 @@ import numpy as np
 from sklearn.cluster import DBSCAN
 
 from config import *
-from Extractor.utils import interplate_and_align, compute_dtw, compute_gradient_dtw
+from Extractor.utils import interplate_and_align, compute_dtw, compute_gradient_dtw, compute_ball_move, compute_eye_move
 
 
 """ 
@@ -100,16 +100,7 @@ def extract_trajectory_lite(round_index, data:pd.DataFrame, ball_data_df):
     return _fea
 
 
-def compute_ball_move(ball_line:pd.DataFrame):
-    _indeices = ball_line.index.to_list()
-    _dist = []
-    for i in range(1, len(_indeices)):
-        _dist.append(
-                np.sqrt(
-                        (ball_line.loc[_indeices[i], "Ball.x"] - ball_line.loc[_indeices[i-1], "Ball.x"])**2 + (ball_line.loc[_indeices[i],"Ball.y"] - ball_line.loc[_indeices[i-1],"Ball.y"])**2
-                    )
-            )
-    return np.sum(_dist)
+
 
 def compute_two_traj_angle(eye_traj:pd.DataFrame, ball_traj:pd.DataFrame):
     # Line 1 points
@@ -143,7 +134,7 @@ def compute_two_traj_angle(eye_traj:pd.DataFrame, ball_traj:pd.DataFrame):
     return angle_degrees
 
 
-def add_trajectory_lite(round_index, data:pd.DataFrame, ball_data_df):
+def modify_trajectory_lite(round_index, data:pd.DataFrame, ball_data_df):
     _fea = {}
     
     _ball_df = ball_data_df[ball_data_df["round"]==round_index]
@@ -153,9 +144,11 @@ def add_trajectory_lite(round_index, data:pd.DataFrame, ball_data_df):
         )
     
     _ball_move = compute_ball_move(_ball_df.loc[:, ["Ball.x", "Ball.y"]].copy())
+    _eye_move = compute_eye_move(data.loc[:, ["Screen.x", "Screen.y"]].copy())
 
     _fea["TrajDTW"] = _dtw * VR_SCALE
     _fea["TrajDTWPerBallMove"] = (_dtw * VR_SCALE) / (_ball_move * VR_SCALE)
+    _fea["TrajDTWPerEyeMove"] = (_dtw * VR_SCALE) / (_eye_move * VR_SCALE)
     _fea["DirecAngle"] = compute_two_traj_angle(
             eye_traj=data.loc[:, ["Screen.x", "Screen.y"]],
             ball_traj=_ball_df.loc[:, ["Ball.x", "Ball.y"]].copy()
@@ -173,9 +166,11 @@ def extract_trajectory(round_index, data:pd.DataFrame, ball_data_df):
         )
     
     _ball_move = compute_ball_move(_ball_df.loc[:, ["Ball.x", "Ball.y"]].copy())
+    _eye_move = compute_eye_move(data.loc[:, ["Screen.x", "Screen.y"]].copy())
 
     _fea["TrajDTW"] = _dtw * VR_SCALE
     _fea["TrajDTWPerBallMove"] = (_dtw * VR_SCALE) / (_ball_move * VR_SCALE)
+    _fea["TrajDTWPerEyeMove"] = (_dtw * VR_SCALE) / (_eye_move * VR_SCALE)
     _fea["DirecAngle"] = compute_two_traj_angle(
             eye_traj=data.loc[:, ["Screen.x", "Screen.y"]],
             ball_traj=_ball_df.loc[:, ["Ball.x", "Ball.y"]].copy()

@@ -48,12 +48,12 @@ def interplate_and_align(base_df:pd.DataFrame, align_df:pd.DataFrame, base_rate:
     share_rate = abs(base_rate * align_rate) // np.gcd(base_rate, align_rate)
     
     align_df["frame"] = align_df["frame"] * (share_rate // align_rate)
-    temp_index= np.array(range(1, int(base_df["frame"].max()+1) * (share_rate // base_rate)))
+    temp_index= np.array(range(1, (int(base_df["frame"].max())+1) * (share_rate // base_rate)))
 
     temp_time_df = pd.DataFrame(temp_index, index=temp_index, columns=["frame"])
-    _index = temp_time_df.index
+    # _index = temp_time_df.index.to_list()
     temp_time_df = temp_time_df.merge(align_df, how="left", on="frame")
-    temp_time_df.index = _index
+    temp_time_df.index = list(range(1, temp_time_df.shape[0]+1))
     ## interplate
     for col in temp_time_df.columns:
         if col=="round": continue
@@ -63,9 +63,8 @@ def interplate_and_align(base_df:pd.DataFrame, align_df:pd.DataFrame, base_rate:
     temp_time_df.bfill(inplace=True)
     
     base_df["frame"] = base_df["frame"] * (share_rate // base_rate)
-    _index = base_df.index
     alined_df = base_df.merge(temp_time_df, how="left", on="frame", )
-    alined_df.index = _index
+    alined_df.index = list(range(1, alined_df.shape[0]+1))
     alined_df["frame"] = alined_df["frame"] // (share_rate // base_rate)
 
     if convert_dist:
@@ -185,3 +184,24 @@ def single_person_match_rounds(people_match_rounds_res, people_id):
             continue
     return res
 
+def compute_ball_move(ball_line:pd.DataFrame):
+    _indeices = ball_line.index.to_list()
+    _dist = []
+    for i in range(1, len(_indeices)):
+        _dist.append(
+                np.sqrt(
+                        (ball_line.loc[_indeices[i], "Ball.x"] - ball_line.loc[_indeices[i-1], "Ball.x"])**2 + (ball_line.loc[_indeices[i],"Ball.y"] - ball_line.loc[_indeices[i-1],"Ball.y"])**2
+                    )
+            )
+    return np.sum(_dist)
+
+def compute_eye_move(ball_line:pd.DataFrame):
+    _indeices = ball_line.index.to_list()
+    _dist = []
+    for i in range(1, len(_indeices)):
+        _dist.append(
+                np.sqrt(
+                        (ball_line.loc[_indeices[i], "Screen.x"] - ball_line.loc[_indeices[i-1], "Screen.x"])**2 + (ball_line.loc[_indeices[i],"Screen.y"] - ball_line.loc[_indeices[i-1],"Screen.y"])**2
+                    )
+            )
+    return np.sum(_dist)

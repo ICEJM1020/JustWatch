@@ -15,7 +15,7 @@ import time
 
 from config import *
 from load_data import fetch_data, fetch_trajectory, fetch_player_box
-from Extractor.Extractor import extract_features, add_features
+from Extractor.Extractor import extract_features, modify_features
 
 
 def extract_person(_person_dict:dict):
@@ -77,31 +77,41 @@ def extract_person(_person_dict:dict):
     return _person
 
 
-def add_person(_person_dict:dict):
+def modify_person(_person_dict:dict):
     start_time = time.time()
     _person=_person_dict[0]
     _person_data=_person_dict[1]["data"]
     _ball_data=_person_dict[1]["ball_data"]
 
     _person_fea = {}
-
-    with open(os.path.join(FEA_DIR, f"{_person}/match_rounds.json"), "r") as f:
-        people_match_round = json.load(f)
+    _person_match_rounds = {}
+    
+    try:
+        with open(os.path.join(FEA_DIR, f"{_person}/rounds.json"), "r") as f:
+            people_rounds = json.load(f)
+    except:
+        return False
 
     for _video in _person_data.keys():
-        # if not _video == "p7": continue
+        # if not _video == "p10_0_0_1": continue
 
-        if _video in people_match_round.keys():
-            res = add_features(
+        if _video in people_rounds.keys():
+            res = modify_features(
                     data=_person_data[_video], 
                     ball_data=_ball_data[_video.split("_")[0]],
-                    match_rounds=people_match_round[_video]
+                    rounds=people_rounds[_video],
+                    dist_th=58
                 )
+        
             _person_fea[_video] = {}
-            if res["attention_fea"]:
-                _person_fea[_video]["All"] = res["attention_fea"]
+            _person_fea[_video]["All"] = {}
+            _person_fea[_video]["All"].update(res["attention_fea"])
+            _person_fea[_video]["All"].update({"MatchRoundRatio" : len(res["match_rounds"]) / len(res["rounds"])})
+            
             if res["saccade_fea"]:
                 _person_fea[_video].update(res["saccade_fea"])
+            if res["match_rounds"]:
+                _person_match_rounds[_video] = res["match_rounds"]
         else:
             print(f"{_person} no match round in {_video}")
 
@@ -118,8 +128,12 @@ def add_person(_person_dict:dict):
     ori_fea_df = pd.read_csv(f"{out_dir}/features.csv", index_col=0)
     drop_cols = list(filter(lambda x: x in new_fea_df.columns, ori_fea_df.columns))
     ori_fea_df.drop(drop_cols, axis=1, inplace=True)
-    fea_df = pd.merge(left=ori_fea_df, right=new_fea_df, how="left", left_index=True, right_index=True)
+    # fea_df = pd.merge(left=ori_fea_df, right=new_fea_df, how="left", left_index=True, right_index=True)
+    fea_df = pd.merge(left=new_fea_df, right=ori_fea_df, how="left", left_index=True, right_index=True)
     fea_df.to_csv(f"{out_dir}/featuresNew.csv")
+
+    with open(f"{out_dir}/match_rounds.json", "w") as f:
+        json.dump(_person_match_rounds, f)
 
     print(_person, time.time()-start_time)
     return _person
@@ -156,5 +170,8 @@ if __name__ == "__main__":
     # with mp.Pool(processes=mp.cpu_count()) as pool:
     #     results = pool.map(extract_person, data.items())
     with mp.Pool(processes=mp.cpu_count()) as pool:
-        results = pool.map(add_person, data.items())
+        results = pool.map(modify_person, data.items())
+    # for _d in data.items():
+    #     # if _d[0] == "24090918_AD": 
+    #     modify_person(_d)
 
