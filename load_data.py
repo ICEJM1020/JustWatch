@@ -1,35 +1,52 @@
 import os
 import pandas as pd
 import numpy as np
+import re
 
 from config import *
-
 
 
 def fetch_data(dir_path:str, file_list:list, drop_list:list=[]):
     
     def fetch_eye_data(_raw_eye_data:str):
-        _eye_data_rows = _raw_eye_data.split(";")
-        eye_data = {}   
-        names = _eye_data_rows[0].split(" ")
-        for idx, row in enumerate(_eye_data_rows):
-            if idx == 0 : continue
+        if ";" in _raw_eye_data:
+            _eye_data_rows = _raw_eye_data.split(";")
+            eye_data = {}   
+            names = _eye_data_rows[0].split(" ")
+            for idx, row in enumerate(_eye_data_rows):
+                if idx == 0 : continue
 
-            cur_data = row.split(" ")
-            try:
-                eye_data[idx] = {
-                    names[0] : FILL_NAN if cur_data[0]=="NaN" else float(cur_data[0]),
-                    names[1] : FILL_NAN if cur_data[0]=="NaN" else float(cur_data[1]),
-                    names[2] : FILL_NAN if cur_data[0]=="NaN" else float(cur_data[2]),
-                    names[3] : FILL_NAN if cur_data[0]=="NaN" else float(cur_data[3]),
-                }
-            except:
-                eye_data[idx] = {
-                    names[0] : FILL_NAN,
-                    names[1] : FILL_NAN,
-                    names[2] : FILL_NAN,
-                    names[3] : FILL_NAN,
-                }
+                cur_data = row.split(" ")
+                try:
+                    eye_data[idx] = {
+                        names[0] : FILL_NAN if cur_data[0]=="NaN" else float(cur_data[0]),
+                        names[1] : FILL_NAN if cur_data[0]=="NaN" else float(cur_data[1]),
+                        names[2] : FILL_NAN if cur_data[0]=="NaN" else float(cur_data[2]),
+                        names[3] : FILL_NAN if cur_data[0]=="NaN" else float(cur_data[3]),
+                    }
+                except:
+                    eye_data[idx] = {
+                        names[0] : FILL_NAN,
+                        names[1] : FILL_NAN,
+                        names[2] : FILL_NAN,
+                        names[3] : FILL_NAN,
+                    }
+        else:
+            pattern = r"\((-?\d+(?:\.\d+)?|NaN), (-?\d+(?:\.\d+)?|NaN)\)"
+            _eye_data_rows = re.findall(pattern, _raw_eye_data)
+            eye_data = {}   
+            names = ["Screen.x", "Screen.y"]
+            for idx, (x, y) in enumerate(_eye_data_rows):
+                try:
+                    eye_data[idx] = {
+                        names[0] : FILL_NAN if x=="NaN" else float(x),
+                        names[1] : FILL_NAN if y=="NaN" else float(y),
+                    }
+                except:
+                    eye_data[idx] = {
+                        names[0] : FILL_NAN,
+                        names[1] : FILL_NAN
+                    }
 
         return eye_data
 
@@ -56,7 +73,7 @@ def fetch_data(dir_path:str, file_list:list, drop_list:list=[]):
             v_id = v_id + f"_{v_sec}_{v_num}_{_videos[v_name]}"
             _single_person_data_dict[v_id] = _eye_data
         
-        _all_data[file.split(".")[0]] = _single_person_data_dict
+        _all_data[file.split(os.sep)[-1].split(".")[0]] = _single_person_data_dict
     
     return _all_data
 

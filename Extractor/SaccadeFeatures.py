@@ -47,7 +47,7 @@ def compute_drop_point_bias_delay(eye_data:pd.DataFrame, eye_index, ball_data:pd
     return init_bias, final_bias
 
 
-def compute_saccade_path(df:pd.DataFrame):
+def compute_saccade_path_wholegame(df:pd.DataFrame):
     _speeds = []
     _angles = []
 
@@ -73,7 +73,7 @@ def compute_saccade_path(df:pd.DataFrame):
     return _speeds, _angles
 
 
-def extract_saccade_features(data, video_id):
+def extract_saccade_features_wholegame(data):
     _fea = {}
     temp = np.array([data["Screen.x"], data["Screen.y"], data.index.to_numpy()]).T
     temp = pd.DataFrame(temp)
@@ -91,8 +91,8 @@ def extract_saccade_features(data, video_id):
     # temp.loc[_not_na_index, "c"] = cluster_res.labels_
     temp["c"] = cluster_res.labels_
     ## map the pixel value to real distance
-    temp["x"] = temp["x"] * VR_SCALE
-    temp["y"] = temp["y"] * VR_SCALE
+    temp["Screen.x"] = temp["Screen.x"] * VR_SCALE
+    temp["Screen.y"] = temp["Screen.y"] * VR_SCALE
 
     _fea["NumOfGazePoints"] = len(clusters.index) - 1
     # "_g" for gaze
@@ -110,7 +110,7 @@ def extract_saccade_features(data, video_id):
         _g_density.append(_density)
         _g_density_t.append(_density / _duration)
 
-    _speeds,_angles = compute_saccade_path(temp)
+    _speeds,_angles = compute_saccade_path_wholegame(temp)
 
     _fea = {**_fea, **compute_stat("GazeRadius", _g_radius)}
     _fea = {**_fea, **compute_stat("GazeDuratiuon", _g_duration)}

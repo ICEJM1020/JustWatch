@@ -167,9 +167,9 @@ def StatsFeatures(all_people_fea:dict, all_people_stat:pd.DataFrame, fea_list:li
         video_list = list(set(video_list).intersection(set(_stimul_list)))
 
         __multi_list = []
-        if twice==2:
+        if twice=="2":
             __multi_list = list(filter(lambda x: not x.split("-")[0].endswith("_1"), video_list))
-        elif twice==1:
+        elif twice=="1":
             __multi_list = list(filter(lambda x: x.split("-")[0].endswith("_1"), video_list))
         else:
             __multi_list = video_list

@@ -10,8 +10,8 @@ import pandas as pd
 from config import *
 from Extractor.RoundMatcher import find_match_round_dtw, find_match_round_dtw_kmp
 from Extractor.utils import compute_stat, interplate_and_align, compute_dtw, max_circle_radius 
-from Extractor.WholeGameFeatures import extract_features_whole
-from Extractor.SaccadeFeatures import extract_saccade_features_lite, modify_saccade_features_lite, extract_saccade_features
+from Extractor.WholeGameFeatures import extract_features_players, extract_features_dist
+from Extractor.SaccadeFeatures import extract_saccade_features_lite, modify_saccade_features_lite, extract_saccade_features, extract_saccade_features_wholegame
 from Extractor.TrajectoryFeatures import extract_trajectory_lite, modify_trajectory_lite, extract_trajectory, compute_eye_move, compute_two_traj_angle
 
 
@@ -64,7 +64,7 @@ def extract_features(data, ball_data, player_box_data, dtw_mode="fast", scale_ra
     # match_rounds = find_match_round_hit(data_df.loc[:, ["Screen.x", "Screen.y"]], video_id, time_range=7, dist=300)
     saccade_features = extract_features_round(match_rounds, data_df.copy(), ball_data_df.copy())
 
-    attention_features = extract_features_whole(data_df.copy(), ball_data_df.copy(), player_box_data)
+    attention_features = extract_features_players(data_df.copy(), ball_data_df.copy(), player_box_data)
     
     return {
         "match_rounds" : match_rounds, 
@@ -164,4 +164,22 @@ def modify_features(data, ball_data, rounds, dist_th=10):
             "rounds": rounds,
             "saccade_fea": saccade_features,
             "attention_fea": {}
+        }
+
+
+def extract_features_emo(data, ball_data, player_box_data):
+    data_df = pd.DataFrame(data).T
+    data_df.ffill(inplace=True)
+    data_df.bfill(inplace=True)
+
+    ball_data_df = pd.DataFrame(ball_data)
+    
+    attention_features = extract_features_players(data_df.copy(), ball_data_df.copy(), player_box_data)
+    distribution_features = extract_features_dist(data_df.copy(), ball_data_df.copy())
+    saccades_features = extract_saccade_features_wholegame(data=data_df)
+    
+    return {
+        "attention_fea": attention_features,
+        "distribution_fea": distribution_features,
+        "saccades_fea": saccades_features
         }
