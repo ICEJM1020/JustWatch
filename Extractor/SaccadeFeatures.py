@@ -11,6 +11,19 @@ from config import *
 from Extractor.utils import max_circle_radius, compute_stat
 
 
+""" 
+calculate the angle when get two points 
+""" 
+def convert_dist_angle(px1, py1, px2, py2):
+    _toEye1 = np.sqrt(VR_ZDIST**2 + (np.sqrt(px1**2 + py1**2)*VR_SCALE)**2)
+    _toEye2 = np.sqrt(VR_ZDIST**2 + (np.sqrt(px2**2 + py2**2)*VR_SCALE)**2)
+    _ppdist = np.sqrt((px1 - px2)**2 + (py1 - py2)**2)
+
+    cosA = (_toEye1**2 + _toEye2**2 - _ppdist**2) / (2 * _toEye1 * _toEye2)
+    # print(cosA)
+    angle = np.arccos(cosA) / np.pi * 180
+    return angle
+
 
 """ 
 Description: Saccade Features Group
@@ -61,8 +74,9 @@ def compute_saccade_path_wholegame(df:pd.DataFrame):
         c_y_t2 = _temp_t2["Screen.y"].mean()
 
         _dura = ((_temp_t2["t"].mean() - _temp_t1["t"].mean()) * EYE_SAMPLE_TIME ) / 1000.0
-        _dist = np.sqrt((c_x_t1 - c_x_t2)**2 + (c_y_t1 - c_y_t2)**2)
-        _angle = np.arctan(_dist / VR_ZDIST) / np.pi * 180
+        # _dist = np.sqrt((c_x_t1 - c_x_t2)**2 + (c_y_t1 - c_y_t2)**2)
+        # _angle = np.arctan(_dist / VR_ZDIST) / np.pi * 180
+        _angle = convert_dist_angle(c_x_t1, c_y_t1, c_x_t2, c_y_t2)
         _angles.append(_angle)
 
         if _dura <= EYE_SAMPLE_TIME / 1000.0:

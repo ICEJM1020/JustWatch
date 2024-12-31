@@ -25,7 +25,7 @@ def compute_inbox_dist(row):
     return np.sqrt((row["Screen.x"] - circle_x)**2 + (row["Screen.y"] - circle_y)**2) * VR_SCALE 
 
 
-def extract_features_players(eye_data:pd.DataFrame, ball_data_df:pd.DataFrame, player_box_data:dict):
+def extract_features_players(eye_data:pd.DataFrame, player_box_data:dict):
     res = {}
     
     p1_bbox_df = pd.DataFrame(player_box_data["Player-1"])
