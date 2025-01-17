@@ -73,11 +73,6 @@ def extract_features(data, ball_data, player_box_data, dtw_mode="fast", scale_ra
         "attention_fea": attention_features
         }
 
-    # saccade_features = extract_saccade_features(match_rounds, data_df.loc[:, ["Screen.x", "Screen.y"]], video_id)
-    # trajectory_features = extract_trajectory(data_df.loc[:, ["Screen.x", "Screen.y"]], video_id, scale_to_percentage=True)
-
-    # return {**saccade_features, **trajectory_features}
-
 
 def modify_saccade_features_round(rounds:dict, data_df:pd.DataFrame, ball_data_df:pd.DataFrame):
     data_df["frame"] = data_df.index
@@ -111,8 +106,8 @@ def modify_features(data, ball_data, rounds, dist_th=10):
     for _round, _round_index in rounds.items():
         if _round_index:
             temp_df = data_df.loc[_round_index, :].copy()
-            temp_df["sub_x"] = temp_df["Screen.x"]-temp_df["Screen.x"].shift(-1)
-            temp_df["sub_y"] = temp_df["Screen.y"]-temp_df["Screen.y"].shift(-1)
+            # temp_df["sub_x"] = temp_df["Screen.x"]-temp_df["Screen.x"].shift(-1)
+            # temp_df["sub_y"] = temp_df["Screen.y"]-temp_df["Screen.y"].shift(-1)
             temp_df["sub_x"] = np.round(temp_df["Screen.x"]-temp_df["Screen.x"].shift(-1))
             temp_df["sub_y"] = np.round(temp_df["Screen.y"]-temp_df["Screen.y"].shift(-1))
             temp_indices = temp_df.index.to_list()

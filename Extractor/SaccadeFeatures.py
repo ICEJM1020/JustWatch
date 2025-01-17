@@ -149,8 +149,9 @@ def compute_saccade_path_lite(df:pd.DataFrame):
         row_1 = df.loc[indices[_i - 1], :]
         row_2 = df.loc[indices[_i], :]
 
-        _dist = np.sqrt((row_1["Screen.x"] - row_2["Screen.x"])**2 + (row_1["Screen.y"] - row_2["Screen.y"])**2)
-        _angle = np.arctan(_dist / VR_ZDIST) / np.pi * 180
+        # _dist = np.sqrt((row_1["Screen.x"] - row_2["Screen.x"])**2 + (row_1["Screen.y"] - row_2["Screen.y"])**2)
+        # _angle = np.arctan(_dist / VR_ZDIST) / np.pi * 180
+        _angle = convert_dist_angle(row_1["Screen.x"], row_1["Screen.y"], row_2["Screen.x"], row_2["Screen.y"])
 
         _angles.append(_angle)
         _speeds.append(np.divide(_angle, _dura))
@@ -188,8 +189,9 @@ def compute_saccade_path(df:pd.DataFrame, ball_data:pd.DataFrame):
         row_1 = df.loc[indices[_i - 1], :]
         row_2 = df.loc[indices[_i], :]
 
-        _dist = np.sqrt((row_1["Screen.x"] - row_2["Screen.x"])**2 + (row_1["Screen.y"] - row_2["Screen.y"])**2)
-        _angle = np.arctan(_dist / VR_ZDIST) / np.pi * 180
+        # _dist = np.sqrt((row_1["Screen.x"] - row_2["Screen.x"])**2 + (row_1["Screen.y"] - row_2["Screen.y"])**2)
+        # _angle = np.arctan(_dist / VR_ZDIST) / np.pi * 180
+        _angle = convert_dist_angle(row_1["Screen.x"], row_1["Screen.y"], row_2["Screen.x"], row_2["Screen.y"])
         _speeds.append(np.divide(_angle, _dura))
 
     _eye_dist = np.sqrt((df.iloc[0, :]["Screen.x"] - df.iloc[-1, :]["Screen.x"])**2 + (df.iloc[0, :]["Screen.y"] - df.iloc[-1, :]["Screen.y"])**2)

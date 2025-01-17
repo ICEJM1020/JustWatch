@@ -40,7 +40,7 @@ def extract_person(_person_dict:dict):
             ball_data=_ball_data[_video.split("_")[0]],
             player_box_data=_player_box_data[_video.split("_")[0]],
             scale_raw_data=False,
-            dtw_mode="fast",
+            dtw_mode="greedy",
             dtw_th=9999,
             dist_th=58
         )
@@ -63,7 +63,7 @@ def extract_person(_person_dict:dict):
         except:
             continue
     
-    out_dir = f"output/{_person}"
+    out_dir = f"{FEA_DIR}/{_person}"
     if not os.path.exists(out_dir):
         os.mkdir(out_dir)
  
@@ -167,8 +167,8 @@ if __name__ == "__main__":
     all_people_match_rounds = {}
 
     # Using a pool of processes
-    # with mp.Pool(processes=mp.cpu_count()) as pool:
-    #     results = pool.map(extract_person, data.items())
+    with mp.Pool(processes=mp.cpu_count()) as pool:
+        results = pool.map(extract_person, data.items())
     with mp.Pool(processes=mp.cpu_count()) as pool:
         results = pool.map(modify_person, data.items())
     # for _d in data.items():
