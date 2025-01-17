@@ -4,9 +4,9 @@ import numpy as np
 For extracting features: 
 """ 
 # DATA_DIR = "/Users/timberzhang/Documents/Documents/2024-JustWatch/Data"
-DATA_DIR = "/Users/timberzhang/Documents/Project/2024-JustWatch/EmoData"
+# DATA_DIR = "/Users/timberzhang/Documents/Project/2024-JustWatch/EmoData"
 
-# DATA_DIR = "E:\\JustWatchData\\Data"
+DATA_DIR = "E:\\JustWatchData\\Data"
 
 FILL_NAN = np.nan
 CLUSTER_MIN_EPS = 15
@@ -26,7 +26,7 @@ VIDEO_FPS = 30
 """ 
 For analyzing data 
 """ 
-FEA_DIR = "/Users/timberzhang/Documents/Documents/2024-JustWatch/OutputRecord/GreedyNonScale"
+FEA_DIR = "E:\\Code\\JustWacth\\Code\\output"
 
 NUM_CLASSES=3
 VIDEO_TYPES=["p", "1", "N_L"]

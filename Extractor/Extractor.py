@@ -64,7 +64,7 @@ def extract_features(data, ball_data, player_box_data, dtw_mode="fast", scale_ra
     # match_rounds = find_match_round_hit(data_df.loc[:, ["Screen.x", "Screen.y"]], video_id, time_range=7, dist=300)
     saccade_features = extract_features_round(match_rounds, data_df.copy(), ball_data_df.copy())
 
-    attention_features = extract_features_players(data_df.copy(), ball_data_df.copy(), player_box_data)
+    attention_features = extract_features_players(data_df.copy(), player_box_data)
     
     return {
         "match_rounds" : match_rounds, 

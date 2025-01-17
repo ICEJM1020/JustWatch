@@ -29,11 +29,11 @@ def extract_person(_person_dict:dict):
     _person_match_rounds = {}
     _person_rounds = {}
 
-    # if not _person == "24071512_AD": 
-    #     return None
+    if not _person == "24071512_AD": 
+        return None
 
     for _video in _person_data.keys():
-        # if not _video == "p7": continue
+        if not _video.startswith("p7"): continue
         
         res = extract_features(
             data=_person_data[_video], 
