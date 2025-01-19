@@ -27,11 +27,13 @@ def extract_person(_person_dict:dict):
 
     _person_fea = {}
 
-    if not _person == "HC13_杨日": 
-        return None
+    # if not _person == "HC13_杨日": 
+    #     return None
 
     for _video in _person_data.keys():
-        if not _video == "p8_0_0_1": continue
+        # if not _video == "p8_0_0_1": continue
+
+
         if "xiaoping" in _video: continue
         
         res = extract_features_emo(

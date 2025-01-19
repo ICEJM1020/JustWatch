@@ -15,8 +15,10 @@ from Extractor.utils import max_circle_radius, compute_stat
 calculate the angle when get two points 
 """ 
 def convert_dist_angle(px1, py1, px2, py2):
-    _toEye1 = np.sqrt(VR_ZDIST**2 + (np.sqrt(px1**2 + py1**2)*VR_SCALE)**2)
-    _toEye2 = np.sqrt(VR_ZDIST**2 + (np.sqrt(px2**2 + py2**2)*VR_SCALE)**2)
+    # _toEye1 = np.sqrt(VR_ZDIST**2 + (np.sqrt(px1**2 + py1**2)*VR_SCALE)**2)
+    # _toEye2 = np.sqrt(VR_ZDIST**2 + (np.sqrt(px2**2 + py2**2)*VR_SCALE)**2)
+    _toEye1 = np.sqrt(VR_ZDIST**2 + px1**2 + py1**2)
+    _toEye2 = np.sqrt(VR_ZDIST**2 + px2**2 + py2**2)
     _ppdist = np.sqrt((px1 - px2)**2 + (py1 - py2)**2)
 
     cosA = (_toEye1**2 + _toEye2**2 - _ppdist**2) / (2 * _toEye1 * _toEye2)
@@ -141,7 +143,7 @@ def compute_saccade_path_lite(df:pd.DataFrame):
     _speeds = []
     _angles = []
     indices = list(df.index)
-    _dura = (1 * EYE_SAMPLE_TIME ) / 1000.0
+    _dura = EYE_SAMPLE_TIME / 1000.0
     df["Screen.x"] = df["Screen.x"] * VR_SCALE
     df["Screen.y"] = df["Screen.y"] * VR_SCALE
 
@@ -178,7 +180,7 @@ def extract_saccade_features_lite(round_index, data:pd.DataFrame, ball_data_df:p
 def compute_saccade_path(df:pd.DataFrame, ball_data:pd.DataFrame):
     _speeds = []
     indices = list(df.index)
-    _dura = (1 * EYE_SAMPLE_TIME ) / 1000.0
+    _dura = EYE_SAMPLE_TIME / 1000.0
     df["Screen.x"] = df["Screen.x"] * VR_SCALE
     df["Screen.y"] = df["Screen.y"] * VR_SCALE
 
@@ -194,10 +196,12 @@ def compute_saccade_path(df:pd.DataFrame, ball_data:pd.DataFrame):
         _angle = convert_dist_angle(row_1["Screen.x"], row_1["Screen.y"], row_2["Screen.x"], row_2["Screen.y"])
         _speeds.append(np.divide(_angle, _dura))
 
-    _eye_dist = np.sqrt((df.iloc[0, :]["Screen.x"] - df.iloc[-1, :]["Screen.x"])**2 + (df.iloc[0, :]["Screen.y"] - df.iloc[-1, :]["Screen.y"])**2)
-    _eye_amp = np.arctan(_eye_dist / VR_ZDIST) / np.pi * 180
-    _ball_dist = np.sqrt((ball_data.iloc[0, :]["Ball.x"] - ball_data.iloc[-1, :]["Ball.x"])**2 + (ball_data.iloc[0, :]["Ball.y"] - ball_data.iloc[-1, :]["Ball.y"])**2)
-    _ball_amp = np.arctan(_ball_dist / VR_ZDIST) / np.pi * 180
+    # _eye_dist = np.sqrt((df.iloc[0, :]["Screen.x"] - df.iloc[-1, :]["Screen.x"])**2 + (df.iloc[0, :]["Screen.y"] - df.iloc[-1, :]["Screen.y"])**2)
+    # _eye_amp = np.arctan(_eye_dist / VR_ZDIST) / np.pi * 180
+    # _ball_dist = np.sqrt((ball_data.iloc[0, :]["Ball.x"] - ball_data.iloc[-1, :]["Ball.x"])**2 + (ball_data.iloc[0, :]["Ball.y"] - ball_data.iloc[-1, :]["Ball.y"])**2)
+    # _ball_amp = np.arctan(_ball_dist / VR_ZDIST) / np.pi * 180
+    _eye_amp = convert_dist_angle(df.iloc[0, :]["Screen.x"], df.iloc[0, :]["Screen.y"], df.iloc[-1, :]["Screen.x"], df.iloc[-1, :]["Screen.y"])
+    _ball_amp = convert_dist_angle(ball_data.iloc[0, :]["Ball.x"], ball_data.iloc[0, :]["Ball.y"], ball_data.iloc[-1, :]["Ball.x"], ball_data.iloc[-1, :]["Ball.y"])
 
     return _speeds, _eye_amp, _eye_amp/_ball_amp
 

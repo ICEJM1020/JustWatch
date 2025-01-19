@@ -6,7 +6,8 @@ For extracting features:
 # DATA_DIR = "/Users/timberzhang/Documents/Documents/2024-JustWatch/Data"
 # DATA_DIR = "/Users/timberzhang/Documents/Project/2024-JustWatch/EmoData"
 
-DATA_DIR = "E:\\JustWatchData\\Data"
+# DATA_DIR = "E:\\Code\\JustWacth\\Data"
+DATA_DIR = "E:\\Code\\JustWacth\\EmoData"
 
 FILL_NAN = np.nan
 CLUSTER_MIN_EPS = 15

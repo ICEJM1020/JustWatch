@@ -169,8 +169,10 @@ def extract_features_emo(data, ball_data, player_box_data):
 
     ball_data_df = pd.DataFrame(ball_data)
     
-    attention_features = extract_features_players(data_df.copy(), player_box_data)
-    distribution_features = extract_features_dist(data_df.copy(), ball_data_df.copy())
+    # attention_features = extract_features_players(data_df.copy(), player_box_data)
+    # distribution_features = extract_features_dist(data_df.copy(), ball_data_df.copy())
+    attention_features = {}
+    distribution_features = {}
     saccades_features = extract_saccade_features_wholegame(data=data_df)
     
     return {

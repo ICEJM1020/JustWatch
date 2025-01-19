@@ -29,11 +29,11 @@ def extract_person(_person_dict:dict):
     _person_match_rounds = {}
     _person_rounds = {}
 
-    if not _person == "24071512_AD": 
-        return None
+    # if not _person == "24071512_AD": 
+    #     return None
 
     for _video in _person_data.keys():
-        if not _video.startswith("p7"): continue
+        # if not _video.startswith("p7"): continue
         
         res = extract_features(
             data=_person_data[_video], 
@@ -145,8 +145,8 @@ if __name__ == "__main__":
 
     file_list = os.listdir(DATA_DIR)
     file_list = list(filter(lambda x: "AD" in x, file_list))
-    # drop_list = ['pingpang.csv', 'tennis.csv', '.DS_Store', 'ControlGroupInfo.xlsx',]
-    drop_list = [i+".csv" for i in os.listdir("output")]
+    drop_list = ['pingpang.csv', 'tennis.csv', '.DS_Store', 'ControlGroupInfo.xlsx',]
+    drop_list += [i+".csv" for i in os.listdir("output")]
 
     all_data = fetch_data(DATA_DIR, file_list, drop_list=drop_list)
     ball_data = fetch_trajectory(DATA_DIR)
@@ -167,8 +167,8 @@ if __name__ == "__main__":
     all_people_match_rounds = {}
 
     # Using a pool of processes
-    with mp.Pool(processes=mp.cpu_count()) as pool:
-        results = pool.map(extract_person, data.items())
+    # with mp.Pool(processes=mp.cpu_count()) as pool:
+    #     results = pool.map(extract_person, data.items())
     with mp.Pool(processes=mp.cpu_count()) as pool:
         results = pool.map(modify_person, data.items())
     # for _d in data.items():
