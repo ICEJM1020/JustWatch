@@ -111,7 +111,7 @@ def extract_features(data, ball_data, player_box_data, dtw_mode="fast", scale_ra
 
     _, rounds = threshold_find_match_round_dtw(data_df.copy(), ball_data_df.copy(), order=0, scale_raw_data=scale_raw_data, mode=dtw_mode, dtw_th=dtw_th, dist_th=dist_th)
     
-    match_rounds = filter_match_rounds(data_df, rounds, )
+    match_rounds = filter_match_rounds(data_df, rounds, ball_data_df, dist_th=dist_th)
     if match_rounds:
         saccade_features = extract_features_round(match_rounds, data_df.copy(), ball_data_df.copy())
     else:
