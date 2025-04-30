@@ -13,6 +13,7 @@ def fetch_data(dir_path:str, file_list:list, drop_list:list=[]):
             _eye_data_rows = _raw_eye_data.split(";")
             eye_data = {}   
             names = _eye_data_rows[0].split(" ")
+            # names = ["Screen.x", "Screen.y"]
             for idx, row in enumerate(_eye_data_rows):
                 if idx == 0 : continue
 

@@ -51,6 +51,55 @@ def threshold_find_match_round_dtw(eye_data:pd.DataFrame, ball_data_df:pd.DataFr
     return res, rounds
 
 
+
+def filter_match_rounds(data_df, rounds, ball_data_df, dist_th=10, angle_th=60):
+    match_rounds = {}
+    for _round, _round_index in rounds.items():
+        if _round_index:
+            temp_df = data_df.loc[_round_index, :].copy()
+            # temp_df["sub_x"] = temp_df["Screen.x"]-temp_df["Screen.x"].shift(-1)
+            # temp_df["sub_y"] = temp_df["Screen.y"]-temp_df["Screen.y"].shift(-1)
+            temp_df["sub_x"] = np.round(temp_df["Screen.x"]-temp_df["Screen.x"].shift(-1))
+            temp_df["sub_y"] = np.round(temp_df["Screen.y"]-temp_df["Screen.y"].shift(-1))
+            temp_indices = temp_df.index.to_list()
+
+            ## search for where brake the line
+            break_indices = []
+            for i in range(1, len(temp_indices)):
+                if temp_df.loc[temp_indices[i], "sub_x"] * temp_df.loc[temp_indices[i-1], "sub_x"] < 0:
+                    if temp_df.loc[temp_indices[i], "sub_y"] * temp_df.loc[temp_indices[i-1], "sub_y"] > 0:
+                        break_indices.append(temp_indices[i])
+                if temp_df.loc[temp_indices[i], "sub_y"] * temp_df.loc[temp_indices[i-1], "sub_y"] < 0:
+                    break_indices.append(temp_indices[i])
+            break_indices = list(set(break_indices))
+            break_indices.sort()
+
+            ## use max length of single direction line
+            max_dist = -1
+            _indices = []
+            for idx, end_index in enumerate(break_indices):
+                if idx==0:
+                    start_index=temp_indices[0]
+                else:
+                    start_index=break_indices[idx-1]
+                dist = compute_eye_move(temp_df.loc[start_index:end_index])
+                if dist > max_dist:
+                    max_dist = dist
+                    _indices = temp_df.loc[start_index:end_index].index.to_list()
+
+            if len(_indices)==0: continue
+            # test if the line is longer enough
+            max_dist = max_circle_radius(temp_df.loc[_indices, :]) * 2
+            # test if the angle match
+            angle = compute_two_traj_angle(
+                eye_traj=temp_df.loc[_indices, ["Screen.x", "Screen.y"]].copy(),
+                ball_traj=ball_data_df[ball_data_df["round"]==float(_round)].copy()
+            )
+            if max_dist >= dist_th and angle <= angle_th:
+                match_rounds[_round] = _indices
+    return match_rounds
+
+
 def extract_features(data, ball_data, player_box_data, dtw_mode="fast", scale_raw_data=True, dtw_th=1, dist_th=10):
     data_df = pd.DataFrame(data).T
     data_df.ffill(inplace=True)
@@ -60,9 +109,13 @@ def extract_features(data, ball_data, player_box_data, dtw_mode="fast", scale_ra
     
     # match_rounds = label_round_hit(data_df.loc[:, ["Screen.x", "Screen.y"]], video_id)
 
-    match_rounds, rounds = threshold_find_match_round_dtw(data_df.copy(), ball_data_df.copy(), order=0, scale_raw_data=scale_raw_data, mode=dtw_mode, dtw_th=dtw_th, dist_th=dist_th)
-    # match_rounds = find_match_round_hit(data_df.loc[:, ["Screen.x", "Screen.y"]], video_id, time_range=7, dist=300)
-    saccade_features = extract_features_round(match_rounds, data_df.copy(), ball_data_df.copy())
+    _, rounds = threshold_find_match_round_dtw(data_df.copy(), ball_data_df.copy(), order=0, scale_raw_data=scale_raw_data, mode=dtw_mode, dtw_th=dtw_th, dist_th=dist_th)
+    
+    match_rounds = filter_match_rounds(data_df, rounds, )
+    if match_rounds:
+        saccade_features = extract_features_round(match_rounds, data_df.copy(), ball_data_df.copy())
+    else:
+        saccade_features = {}
 
     attention_features = extract_features_players(data_df.copy(), player_box_data)
     

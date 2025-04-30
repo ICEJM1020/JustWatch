@@ -3,11 +3,11 @@ import numpy as np
 """ 
 For extracting features: 
 """ 
-# DATA_DIR = "/Users/timberzhang/Documents/Documents/2024-JustWatch/Data"
+DATA_DIR = "/Users/timberzhang/Documents/Project/2024-JustWatch/Data"
 # DATA_DIR = "/Users/timberzhang/Documents/Project/2024-JustWatch/EmoData"
 
 # DATA_DIR = "E:\\Code\\JustWacth\\Data"
-DATA_DIR = "E:\\Code\\JustWacth\\EmoData"
+# DATA_DIR = "E:\\Code\\JustWacth\\EmoData"
 
 FILL_NAN = np.nan
 CLUSTER_MIN_EPS = 15
@@ -27,25 +27,27 @@ VIDEO_FPS = 30
 """ 
 For analyzing data 
 """ 
-FEA_DIR = "E:\\Code\\JustWacth\\Code\\output"
+# FEA_DIR = "E:\\Code\\JustWacth\\Code\\output"
+FEA_DIR = "/Users/timberzhang/Documents/Project/2024-JustWatch/CHI2025/OutputRecord/20250119"
 
-NUM_CLASSES=3
+
+NUM_CLASSES=2
 VIDEO_TYPES=["p", "1", "N_L"]
 
 # [ball (w, p), session ([0,1,2,3]), number (f,b,all), twice (0,1,2), stimul_type (r,a,all)]
 VIDEO_TYPE_LIST={
     ## Five main
-    "pingpang_no" : ["p", [0], "all", "0", "all"],
-    "pingpang_ra" : ["p", [3], "f", "0", "r"],
-    "pingpang_rs" : ["p", [1], "all", "0", "r"],
-    "pingpang_aa" : ["p", [3], "f", "0", "a"],
-    "pingpang_as" : ["p", [1], "all", "0", "a"],
+    # "pingpang_no" : ["p", [0], "all", "0", "all"],
+    # "pingpang_ra" : ["p", [3], "f", "0", "r"],
+    # "pingpang_rs" : ["p", [1], "all", "0", "r"],
+    # "pingpang_aa" : ["p", [3], "f", "0", "a"],
+    # "pingpang_as" : ["p", [1], "all", "0", "a"],
     
-    "wangqiu_no" : ["w", [0], "all", "0", "all"],
-    "wangqiu_ra" : ["w", [3], "f", "0", "r"],
-    "wangqiu_rs" : ["w", [1], "all", "0", "r"],
-    "wangqiu_aa" : ["w", [3], "f", "0", "a"],
-    "wangqiu_as" : ["w", [1], "all", "0", "a"],
+    # "wangqiu_no" : ["w", [0], "all", "0", "all"],
+    # "wangqiu_ra" : ["w", [3], "f", "0", "r"],
+    # "wangqiu_rs" : ["w", [1], "all", "0", "r"],
+    # "wangqiu_aa" : ["w", [3], "f", "0", "a"],
+    # "wangqiu_as" : ["w", [1], "all", "0", "a"],
 
 	# # BEFORE and AFTER shining
 	# "pingpang_1C": ["p", [0], "f", "0", "all"],
@@ -126,3 +128,10 @@ WHOLE_FEA_LIST = ["MatchRoundRatio",]
 # whole_fea_list = ["Player1AttentionRatio","Player2AttentionRatio","Player1MinToCircle","Player2MinToCircle","MatchRoundRatio",]
 SACCADE_FEA_LIST = ["SaccadeSpeed_Mean","SaccadeSpeed_Max","SaccadeSpeed_Std","SaccadeAngel_Mean","SaccadeAngel_Max","SaccadeAngel_Std","SaccadeDelay","SaccadeDelayPercent","TrajectoryDTW"]
 FEA_LIST = ["MatchRoundRatio","SaccadeSpeed_Mean","SaccadeSpeed_Max","SaccadeSpeed_Std","Amplitude","UnitAmplitude","SaccadeDelay","SaccadeDelayPercent","TrajDTW","TrajDTWPerBallMove","TrajDTWPerEyeMove","DirecAngle"]
+
+"""
+33 24071011_AD
+10 24082904_AD
+19 24071618_AD
+22 24070907_AD
+"""

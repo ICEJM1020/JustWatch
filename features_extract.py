@@ -167,10 +167,10 @@ if __name__ == "__main__":
     all_people_match_rounds = {}
 
     # Using a pool of processes
-    # with mp.Pool(processes=mp.cpu_count()) as pool:
-    #     results = pool.map(extract_person, data.items())
     with mp.Pool(processes=mp.cpu_count()) as pool:
-        results = pool.map(modify_person, data.items())
+        results = pool.map(extract_person, data.items())
+    # with mp.Pool(processes=mp.cpu_count()) as pool:
+    #     results = pool.map(modify_person, data.items())
     # for _d in data.items():
     #     # if _d[0] == "24090918_AD": 
     #     modify_person(_d)
