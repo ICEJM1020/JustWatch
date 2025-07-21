@@ -3,10 +3,10 @@ import numpy as np
 """ 
 For extracting features: 
 """ 
-# DATA_DIR = "/Users/timberzhang/Documents/Project/2024-JustWatch/Data"
+DATA_DIR = "/Users/timberzhang/Documents/Project/2024-JustWatch/Data"
 # DATA_DIR = "/Users/timberzhang/Documents/Project/2024-JustWatch/EmoData"
 
-DATA_DIR = "E:\\Code\\JustWacth\\Data"
+# DATA_DIR = "E:\\Code\\JustWacth\\Data"
 # DATA_DIR = "E:\\Code\\JustWacth\\EmoData"
 
 FILL_NAN = np.nan
@@ -28,26 +28,26 @@ VIDEO_FPS = 30
 For analyzing data 
 """ 
 # FEA_DIR = "E:\\Code\\JustWacth\\Code\\output"
-FEA_DIR = "/Users/timberzhang/Documents/Project/2024-JustWatch/CHI2025/OutputRecord/20250119"
+FEA_DIR = "/Users/timberzhang/Documents/Project/2024-JustWatch/IJHCS/OutputRecord/20250506"
 
 
-NUM_CLASSES=2
+NUM_CLASSES=3
 VIDEO_TYPES=["p", "1", "N_L"]
 
 # [ball (w, p), session ([0,1,2,3]), number (f,b,all), twice (0,1,2), stimul_type (r,a,all)]
 VIDEO_TYPE_LIST={
     ## Five main
-    # "pingpang_no" : ["p", [0], "all", "0", "all"],
+    "pingpang_no" : ["p", [0], "all", "0", "all"],
     # "pingpang_ra" : ["p", [3], "f", "0", "r"],
-    # "pingpang_rs" : ["p", [1], "all", "0", "r"],
+    "pingpang_rs" : ["p", [1], "all", "0", "r"],
     # "pingpang_aa" : ["p", [3], "f", "0", "a"],
-    # "pingpang_as" : ["p", [1], "all", "0", "a"],
+    "pingpang_as" : ["p", [1], "all", "0", "a"],
     
-    # "wangqiu_no" : ["w", [0], "all", "0", "all"],
+    "wangqiu_no" : ["w", [0], "all", "0", "all"],
     # "wangqiu_ra" : ["w", [3], "f", "0", "r"],
-    # "wangqiu_rs" : ["w", [1], "all", "0", "r"],
+    "wangqiu_rs" : ["w", [1], "all", "0", "r"],
     # "wangqiu_aa" : ["w", [3], "f", "0", "a"],
-    # "wangqiu_as" : ["w", [1], "all", "0", "a"],
+    "wangqiu_as" : ["w", [1], "all", "0", "a"],
 
 	# # BEFORE and AFTER shining
 	# "pingpang_1C": ["p", [0], "f", "0", "all"],
@@ -115,13 +115,21 @@ VIDEO_TYPE_LIST={
 
 
 DROP_LIST = [
-    '24070901_AD',
-	# '24082302_AD',
-	'24071619_AD',
-	# '24090311_AD',
-	# '24090915_AD',
-	'24071617_AD',
-	'24071513_AD'
+    # "24082904_AD",
+    # "24082203_AD",
+    "24090917_AD",
+	"24092002_AD",
+	"24092009_AD",
+	"24090308_AD",
+	"24091022_AD",
+	"24090310_AD",
+	"24092209_AD",
+	"24092207_AD",
+	"24092111_AD",
+	"24092102_AD",
+	"24092110_AD",
+	"24082803_AD",
+	"24090412_AD",
 	]
 
 WHOLE_FEA_LIST = ["MatchRoundRatio",]
@@ -134,4 +142,66 @@ FEA_LIST = ["MatchRoundRatio","SaccadeSpeed_Mean","SaccadeSpeed_Max","SaccadeSpe
 10 24082904_AD
 19 24071618_AD
 22 24070907_AD
+
+24090917_AD
+24092002_AD
+24092009_AD
+24090308_AD
+24091022_AD
+24090310_AD
+24092209_AD
+24092207_AD
+24092111_AD
+24092102_AD
+24092110_AD
+
+"""
+
+"""
+'24090310_AD', 
+'24092009_AD', 
+'24092002_AD', 
+'24092111_AD',
+'24092110_AD'
+'24092102_AD',
+'24090310_AD',
+'24092209_AD', 
+'24092207_AD'
+
+'24092208_AD', '24092209_AD', '24092207_AD', '24092111_AD',
+       '24092102_AD', '24092110_AD', '24090412_AD'
+"""
+
+"""
+HC
+24092107_AD +
+24072023_AD
+24071009_AD + 
+24092012_AD
+24092008_AD +
+24070907_AD + 
+24071011_AD + 
+24072926_AD +
+24071721_AD
+24092010_AD
+24092105_AD +
+
+MCI
+24090308_AD +
+24090917_AD ++
+24082803_AD
+24092002_AD ++
+24082302_AD +
+24090915_AD
+24092005_AD
+
+
+MMAD
+24083007_AD +
+24092007_AD +
+24090914_AD +
+24090919_AD
+24092104_AD +
+24092009_AD ++
+24092103_AD
 """

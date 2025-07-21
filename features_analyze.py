@@ -16,7 +16,7 @@ sns.set_theme(style="whitegrid")
 import matplotlib.pyplot as plt        
 from itertools import cycle
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
-from sklearn.model_selection import RepeatedKFold
+from sklearn.model_selection import RepeatedKFold, RepeatedStratifiedKFold
 from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier
 from sklearn.svm import SVC
 from sklearn.metrics import classification_report, auc, roc_curve, roc_auc_score, confusion_matrix
@@ -129,6 +129,7 @@ def StatsFeatures(all_people_fea:dict, all_people_stat:pd.DataFrame, fea_list:li
             "MCI" : 1,
             "mildAD" : 2,
             "moderateAD" : 2,
+            "MMD" : 2,
         }
     else:
         diag_map ={
@@ -136,6 +137,7 @@ def StatsFeatures(all_people_fea:dict, all_people_stat:pd.DataFrame, fea_list:li
             "MCI" : 1,
             "mildAD" : 1,
             "moderateAD" : 1,
+            "MMD" : 1,
         } 
 
     res={}
@@ -305,11 +307,14 @@ def draw_violin(features_df:pd.DataFrame, pt_res:pd.DataFrame, type_name):
 
 def build_model(features_df, pt_res, num_classes, type_name):
     fea_list = pt_res[pt_res["if_para"]].index.to_list()
+    # fea_list = pt_res.index.to_list()
     final_result = {}
     if len(fea_list)==0: return {}
 
-    rkf = RepeatedKFold(n_splits=5, n_repeats=20)
+    # rkf = RepeatedKFold(n_splits=5, n_repeats=20)
+    rkf = RepeatedStratifiedKFold(n_splits=5, n_repeats=50)
     X = features_df[fea_list]
+    y = features_df['label']
     
     final_result = {}
     if num_classes==2:
@@ -327,12 +332,12 @@ def build_model(features_df, pt_res, num_classes, type_name):
         final_result['overall']['preds'] = []
         final_result['overall']['preds_porb'] = []
 
-        for i, (train_index, test_index) in enumerate(rkf.split(X)):
+        for i, (train_index, test_index) in enumerate(rkf.split(X, y)):
             final_result['overall']['test_index'].append(test_index.tolist())
 
-            # cls = RandomForestClassifier(20, max_depth=5)
-            cls = RandomForestClassifier(n_estimators=5, max_depth=3)
-            # cls = AdaBoostClassifier(n_estimators=5, learning_rate=0.75)
+            # cls = RandomForestClassifier(n_estimators=30, max_depth=7)
+            cls = RandomForestClassifier(n_estimators=5, max_depth=5)
+            # cls = AdaBoostClassifier(n_estimators=4, learning_rate=0.75)
             # cls = SVC(C=0.75, kernel='linear')
             # cls = SVC(C=0.75, kernel='rbf')
             x_train, y_train = features_df.iloc[train_index][fea_list], features_df.iloc[train_index]['label']
@@ -367,11 +372,12 @@ def build_model(features_df, pt_res, num_classes, type_name):
         final_result['overall']['preds'] = []
         final_result['overall']['preds_porb'] = []
 
-        for i, (train_index, test_index) in enumerate(rkf.split(X)):
+        for i, (train_index, test_index) in enumerate(rkf.split(X, y)):
             final_result['overall']['test_index'].append(test_index.tolist())
 
+            # cls = RandomForestClassifier(n_estimators=50, max_depth=7)
             cls = RandomForestClassifier(n_estimators=5, max_depth=5)
-            # cls = AdaBoostClassifier(n_estimators=5, learning_rate=0.75)
+            # cls = AdaBoostClassifier(n_estimators=4, learning_rate=0.75, )
             # cls = SVC(C=0.75, kernel='linear')
             # cls = SVC(C=0.75, kernel='rbf')
             x_train, y_train = features_df.iloc[train_index][fea_list], features_df.iloc[train_index]['label']
@@ -567,6 +573,28 @@ def fetch_overall(aim_ana_dir):
     return pd.DataFrame(res, dtype=np.float32).T
 
 
+from statsmodels.stats.multitest import multipletests
+
+def correct_multitest_p(st_res:pd.DataFrame|dict, method="fdr_bh") -> pd.DataFrame: 
+
+    if type(st_res)==pd.DataFrame:
+        pvals = st_res["p-value"]
+        keys = st_res.index.to_list()
+        reject, pvals_corrected, _, _ = multipletests(pvals, method=method)
+
+    elif type(st_res)==dict:
+        pvals = []
+        keys = []
+        for key, val in st_res.items():
+            keys.append(key)
+            pvals.append(val["p-value"])
+        reject, pvals_corrected, _, _ = multipletests(pvals, method=method)
+    else:
+        raise Exception("Datatype of Significance Test result does not support.")
+    
+    return pd.DataFrame({"p-value":pvals_corrected, "if_para":reject}, index=keys).sort_values(by="p-value")
+
+
 if __name__ == "__main__":
 
     if not os.path.exists("ana_output"):
@@ -609,7 +637,10 @@ if __name__ == "__main__":
         features_df.to_csv(os.path.join("ana_output", f"{type_name}.csv"))
 
         pt_res = sig_test(features_df)
-        pt_res.to_csv(os.path.join("ana_output", f"{type_name}_sigfea.csv"))
+        pt_res.to_csv(os.path.join("ana_output", f"{type_name}_sigfea_ori.csv"))
+        pt_res = correct_multitest_p(pt_res)
+        pt_res.to_csv(os.path.join("ana_output", f"{type_name}_sigfea_corrected.csv"))
+
 
         draw_violin(
             features_df=features_df, 
